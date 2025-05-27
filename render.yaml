@@ -6,4 +6,5 @@ services:
     startCommand: "gunicorn app:app"
     envVars:
       - key: WEATHER_API_KEY
-        value: b9dd7e4750f54e99809131318252505
+        value: b9dd7e4750f54e99
+        
