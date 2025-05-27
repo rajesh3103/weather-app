@@ -1,32 +1,64 @@
 <!DOCTYPE html>
-<html>
+<html data-theme="light">
 <head>
     <title>Weather App</title>
     <style>
+        :root[data-theme="light"] {
+            --bg-color: #f0f2f5;
+            --container-bg: white;
+            --text-color: #333;
+            --card-bg: #f8f9fa;
+            --border-color: #ddd;
+        }
+
+        :root[data-theme="dark"] {
+            --bg-color: #1a1a1a;
+            --container-bg: #2d2d2d;
+            --text-color: #ffffff;
+            --card-bg: #383838;
+            --border-color: #404040;
+        }
+
         body { 
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             max-width: 800px;
             margin: 0 auto;
             padding: 20px;
-            background-color: #f0f2f5;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            transition: all 0.3s ease;
         }
+
         .container {
-            background: white;
+            background: var(--container-bg);
             padding: 30px;
             border-radius: 10px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
         }
+
+        .theme-switch {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            cursor: pointer;
+            font-size: 24px;
+        }
+
         .weather-form {
             margin: 20px 0;
             display: flex;
             gap: 10px;
         }
+
         input[type="text"] {
             padding: 10px;
-            border: 1px solid #ddd;
+            border: 1px solid var(--border-color);
             border-radius: 5px;
             flex-grow: 1;
+            background: var(--container-bg);
+            color: var(--text-color);
         }
+
         button {
             padding: 10px 20px;
             background: #0066ff;
@@ -35,41 +67,46 @@
             border-radius: 5px;
             cursor: pointer;
         }
+
         button:hover {
             background: #0052cc;
         }
+
         .weather-result {
             margin-top: 20px;
             padding: 20px;
-            background: #f8f9fa;
+            background: var(--card-bg);
             border-radius: 8px;
         }
+
         .error { 
             color: #dc3545;
             padding: 10px;
             background: #f8d7da;
             border-radius: 5px;
         }
+
         .footer {
             text-align: center;
             margin-top: 30px;
             padding: 20px;
-            color: #666;
+            color: var(--text-color);
             font-size: 14px;
-            border-top: 1px solid #eee;
+            border-top: 1px solid var(--border-color);
         }
-        
+
         .footer a {
             color: #0066ff;
             text-decoration: none;
         }
-        
+
         .footer a:hover {
             text-decoration: underline;
         }
     </style>
 </head>
 <body>
+    <div class="theme-switch" onclick="toggleTheme()" id="themeToggle">🌞</div>
     <div class="container">
         <h1>☁️ Weather App</h1>
         <form class="weather-form" method="POST">
@@ -93,5 +130,20 @@
             Created with ❤️ by <a href="https://github.com/YOUR-GITHUB-USERNAME" target="_blank">Gokata Rajesh</a>
         </div>
     </div>
+
+    <script>
+        function toggleTheme() {
+            const html = document.documentElement;
+            const themeToggle = document.getElementById('themeToggle');
+            
+            if (html.getAttribute('data-theme') === 'light') {
+                html.setAttribute('data-theme', 'dark');
+                themeToggle.textContent = '🌜';
+            } else {
+                html.setAttribute('data-theme', 'light');
+                themeToggle.textContent = '🌞';
+            }
+        }
+    </script>
 </body>
 </html> 
