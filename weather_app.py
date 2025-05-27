@@ -23,7 +23,12 @@ def index():
             weather_data = {
                 'location': data['location']['name'],
                 'temp_c': data['current']['temp_c'],
-                'condition': data['current']['condition']['text']
+                'temp_f': data['current']['temp_f'],
+                'condition': data['current']['condition']['text'],
+                'humidity': data['current']['humidity'],
+                'wind_kph': data['current']['wind_kph'],
+                'feels_like_c': data['current']['feelslike_c'],
+                'last_updated': data['current']['last_updated']
             }
         else:
             error = data.get('error', {}).get('message', 'Something went wrong')
