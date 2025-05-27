@@ -5,43 +5,56 @@
     <style>
         :root[data-theme="light"] {
             --bg-color: #f0f2f5;
-            --container-bg: white;
+            --container-bg: rgba(255, 255, 255, 0.8);
             --text-color: #333;
-            --card-bg: #f8f9fa;
-            --border-color: #ddd;
+            --card-bg: rgba(248, 249, 250, 0.8);
+            --border-color: rgba(221, 221, 221, 0.8);
         }
 
         :root[data-theme="dark"] {
             --bg-color: #1a1a1a;
-            --container-bg: #2d2d2d;
+            --container-bg: rgba(45, 45, 45, 0.8);
             --text-color: #ffffff;
-            --card-bg: #383838;
-            --border-color: #404040;
+            --card-bg: rgba(56, 56, 56, 0.8);
+            --border-color: rgba(64, 64, 64, 0.8);
         }
 
-        body { 
+        body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            max-width: 800px;
-            margin: 0 auto;
+            margin: 0;
             padding: 20px;
             background-color: var(--bg-color);
             color: var(--text-color);
             transition: all 0.3s ease;
+            min-height: 100vh;
         }
 
-        .container {
+        .layout {
+            display: flex;
+            gap: 20px;
+            height: 100vh;
+        }
+
+        .sidebar {
+            width: 220px;
             background: var(--container-bg);
-            padding: 30px;
+            padding: 15px;
             border-radius: 10px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            height: 100vh;
+            overflow-y: auto;
         }
 
-        .theme-switch {
-            position: absolute;
-            top: 20px;
-            right: 20px;
-            cursor: pointer;
-            font-size: 24px;
+        .main-content {
+            flex: 1;
+            background: var(--container-bg);
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            height: 100vh;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
         }
 
         .weather-form {
@@ -72,7 +85,7 @@
             background: #0052cc;
         }
 
-        .weather-result {
+        .weather-details {
             margin-top: 20px;
             padding: 20px;
             background: var(--card-bg);
@@ -91,69 +104,369 @@
             margin-top: 30px;
             padding: 20px;
             color: var(--text-color);
-            font-size: 14px;
             border-top: 1px solid var(--border-color);
         }
 
-        .footer a {
-            color: #0066ff;
-            text-decoration: none;
+        .weather-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            z-index: -1;
+            background-size: cover;
+            background-position: center;
+            opacity: 0.3;
         }
 
-        .footer a:hover {
-            text-decoration: underline;
+        .theme-switch {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            cursor: pointer;
+            font-size: 24px;
+            z-index: 100;
+        }
+
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: var(--container-bg);
+            padding: 20px;
+            border-radius: 10px;
+            min-width: 280px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .modal-content h3 {
+            margin: 0 0 15px 0;
+            color: var(--text-color);
+        }
+
+        .modal-content input {
+            width: 100%;
+            padding: 8px;
+            margin: 8px 0;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            background: var(--bg-color);
+            color: var(--text-color);
+            font-size: 14px;
+        }
+
+        .modal-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .modal-buttons button {
+            padding: 6px 14px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .modal-buttons button:first-child {
+            background: #0066ff;
+            color: white;
+        }
+
+        .modal-buttons button:last-child {
+            background: var(--border-color);
+            color: var(--text-color);
+        }
+
+        .modal-buttons button:hover {
+            opacity: 0.9;
+        }
+
+        .location-list {
+            list-style: none;
+            padding: 0;
+            margin: 10px 0;
+        }
+
+        .location-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px;
+            margin: 5px 0;
+            background: var(--card-bg);
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .location-item:hover {
+            background: var(--border-color);
+        }
+
+        .location-info {
+            flex-grow: 1;
+            cursor: pointer;
+        }
+
+        .location-name {
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+
+        .location-temp {
+            color: var(--text-color);
+            opacity: 0.8;
+        }
+
+        .delete-btn {
+            background: none;
+            border: none;
+            color: #ff4444;
+            font-size: 18px;
+            cursor: pointer;
+            padding: 0 8px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .location-item:hover .delete-btn {
+            opacity: 1;
+        }
+
+        /* Add this for the form */
+        #locationForm {
+            margin: 0;
+        }
+
+        .time-row {
+            font-size: 1.2em;
+            font-weight: 500;
+            margin-bottom: 10px;
+            color: var(--text-color);
+            letter-spacing: 1px;
         }
     </style>
 </head>
 <body>
     <div class="theme-switch" onclick="toggleTheme()" id="themeToggle">🌞</div>
-    <div class="container">
-        <h1>☁️ Weather App</h1>
-        <form class="weather-form" method="POST">
-            <input type="text" name="city" placeholder="Enter city name" required>
-            <button type="submit">Get Weather</button>
-        </form>
+    <div id="weatherBackground" class="weather-background" 
+         data-weather-type="{% if weather and weather.weather_type %}{{ weather.weather_type }}{% else %}default{% endif %}">
+    </div>
 
-        {% if weather %}
-            <div class="weather-result">
+    <div class="layout">
+        <div class="sidebar">
+            <h2>My Places</h2>
+            <ul class="location-list">
+                <li class="location-item" onclick="getLocation()">
+                    <div class="location-info">
+                        <div class="location-name">📍 Current Location</div>
+                    </div>
+                </li>
+                {% for location in locations %}
+                <li class="location-item">
+                    <div class="location-info" onclick="getWeather('{{ location.city }}')">
+                        <div class="location-name">{{ location.name }}</div>
+                        <div class="location-temp">{{ location.temp }}°C</div>
+                    </div>
+                    <button class="delete-btn" onclick="deleteLocation('{{ location.city }}')">&times;</button>
+                </li>
+                {% endfor %}
+            </ul>
+            <button onclick="showAddLocationModal()" class="add-btn">+ Add Location</button>
+        </div>
+
+        <div class="main-content">
+            <div class="time-row">
+                <span id="currentTime"></span>
+                {% if weather and weather.timezone %}
+                    <span id="timezone" style="display:none;">{{ weather.timezone }}</span>
+                    <span id="localtime" style="display:none;">{{ weather.localtime }}</span>
+                {% endif %}
+            </div>
+            <h1>☁️ Weather App</h1>
+            <form class="weather-form" method="POST" id="weatherForm">
+                <input type="text" name="city" placeholder="Enter city name" required>
+                <button type="submit">Get Weather</button>
+            </form>
+
+            {% if weather %}
+            <div class="weather-details">
                 <h2>🌦️ Weather in {{ weather.location }}</h2>
                 <p>🌡️ Temperature: {{ weather.temp_c }}°C</p>
                 <p>🌤️ Condition: {{ weather.condition }}</p>
+                <p>💨 Wind: {{ weather.wind_kph }} km/h</p>
+                <p>💧 Humidity: {{ weather.humidity }}%</p>
+                <p>Feels like: {{ weather.feels_like_c }}°C</p>
             </div>
-        {% endif %}
+            {% endif %}
 
-        {% if error %}
+            {% if error %}
             <p class="error">❌ Error: {{ error }}</p>
-        {% endif %}
-        
-        <div class="footer">
-            Created with ❤️ by <a href="https://github.com/YOUR-GITHUB-USERNAME" target="_blank">Gokata Rajesh</a>
+            {% endif %}
+
+            <div class="footer">
+                Created by ~Rajesh
+            </div>
         </div>
     </div>
 
     <script>
-        // Load saved theme when page loads
+        // Load saved theme on page load
         document.addEventListener('DOMContentLoaded', function() {
-            const savedTheme = localStorage.getItem('theme') || 'light';
-            const html = document.documentElement;
-            const themeToggle = document.getElementById('themeToggle');
-            
-            html.setAttribute('data-theme', savedTheme);
-            themeToggle.textContent = savedTheme === 'light' ? '🌞' : '🌜';
+            var savedTheme = localStorage.getItem('theme') || 'light';
+            document.documentElement.setAttribute('data-theme', savedTheme);
+            document.getElementById('themeToggle').textContent = savedTheme === 'light' ? '🌞' : '🌜';
         });
 
         function toggleTheme() {
-            const html = document.documentElement;
-            const themeToggle = document.getElementById('themeToggle');
-            const currentTheme = html.getAttribute('data-theme');
-            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            var html = document.documentElement;
+            var themeToggle = document.getElementById('themeToggle');
+            var newTheme = html.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
             
             html.setAttribute('data-theme', newTheme);
             themeToggle.textContent = newTheme === 'light' ? '🌞' : '🌜';
-            
-            // Save theme preference
             localStorage.setItem('theme', newTheme);
         }
+
+        function showAddLocationModal() {
+            var modal = document.createElement('div');
+            modal.className = 'modal';
+            modal.innerHTML = `
+                <div class="modal-content">
+                    <h3>Add New Location</h3>
+                    <form id="locationForm" onsubmit="addLocation(event)">
+                        <input type="text" id="newLocationCity" placeholder="Enter city name" required>
+                        <input type="text" id="newLocationName" placeholder="Enter display name (optional)">
+                        <div class="modal-buttons">
+                            <button type="submit">Add</button>
+                            <button type="button" onclick="this.closest('.modal').remove()">Cancel</button>
+                        </div>
+                    </form>
+                </div>
+            `;
+            document.body.appendChild(modal);
+
+            setTimeout(() => {
+                document.getElementById('newLocationCity').focus();
+            }, 100);
+        }
+
+        function addLocation(event) {
+            event.preventDefault();
+            var city = document.getElementById('newLocationCity').value;
+            var displayName = document.getElementById('newLocationName').value;
+            
+            if (!city) {
+                alert('Please enter a city name');
+                return;
+            }
+
+            var form = document.createElement('form');
+            form.method = 'POST';
+            form.action = '/';
+
+            var cityInput = document.createElement('input');
+            cityInput.type = 'hidden';
+            cityInput.name = 'city';
+            cityInput.value = city;
+
+            var nameInput = document.createElement('input');
+            nameInput.type = 'hidden';
+            nameInput.name = 'display_name';
+            nameInput.value = displayName || city;
+
+            var saveInput = document.createElement('input');
+            saveInput.type = 'hidden';
+            saveInput.name = 'save_location';
+            saveInput.value = 'true';
+
+            form.appendChild(cityInput);
+            form.appendChild(nameInput);
+            form.appendChild(saveInput);
+            document.body.appendChild(form);
+            form.submit();
+        }
+
+        function getLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(
+                    function(position) {
+                        var input = document.querySelector('input[name="city"]');
+                        input.value = position.coords.latitude + "," + position.coords.longitude;
+                        document.getElementById('weatherForm').submit();
+                    },
+                    function(error) {
+                        alert("Unable to get location. Please enter city manually.");
+                    }
+                );
+            } else {
+                alert("Geolocation is not supported by this browser.");
+            }
+        }
+
+        function getWeather(city) {
+            var input = document.querySelector('input[name="city"]');
+            input.value = city;
+            document.getElementById('weatherForm').submit();
+        }
+
+        function deleteLocation(city) {
+            // Prevent the click from triggering the parent's onclick
+            event.stopPropagation();
+            
+            // Send delete request
+            fetch('/delete_location', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ city: city })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Reload the page to update the locations list
+                    window.location.reload();
+                }
+            });
+        }
+
+        // Simple background setter
+        var weatherType = document.getElementById("weatherBackground").getAttribute("data-weather-type");
+        document.getElementById("weatherBackground").style.backgroundImage = `url('/static/media/${weatherType}.jpg')`;
+
+        // Time updater
+        function updateTime() {
+            var tzElem = document.getElementById('timezone');
+            var localtimeElem = document.getElementById('localtime');
+            var timeDisplay = document.getElementById('currentTime');
+            if (tzElem && tzElem.textContent) {
+                var tz = tzElem.textContent;
+                var now = new Date();
+                var options = { hour: '2-digit', minute: '2-digit', second: '2-digit', timeZone: tz };
+                timeDisplay.textContent = now.toLocaleTimeString([], options) + ' (' + tz + ')';
+            } else if (localtimeElem && localtimeElem.textContent) {
+                timeDisplay.textContent = localtimeElem.textContent;
+            } else {
+                var now = new Date();
+                timeDisplay.textContent = now.toLocaleTimeString();
+            }
+        }
+        setInterval(updateTime, 1000);
+        updateTime();
     </script>
 </body>
 </html> 
