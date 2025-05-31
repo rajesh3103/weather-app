@@ -419,10 +419,13 @@
                         <div class="location-name">{{ location.name }}</div>
                         <div class="location-temp">{{ location.temp }}°C</div>
                     </div>
-                    <div class="location-actions">
-                        <button class="edit-btn" onclick="showEditLocationModal('{{ location.city }}', '{{ location.name }}')" title="Edit name">✏️</button>
-                        <button class="delete-btn" onclick="deleteLocation('{{ location.city }}')" title="Delete">&times;</button>
-                    </div>
+                    <button class="edit-btn" onclick="showEditLocationModal('{{ location.city|e }}', '{{ location.name|e }}')">✎</button>
+                    <button class="delete-btn"
+                            tabindex="0"
+                            onclick="confirmDeleteLocation(event, '{{ location.city|e }}', '{{ location.name|e }}')"
+                            onkeydown="if(event.key==='Enter'||event.key===' '){confirmDeleteLocation(event, '{{ location.city|e }}', '{{ location.name|e }}');}">
+                        &times;
+                    </button>
                 </li>
                 {% endfor %}
             </ul>
@@ -515,15 +518,14 @@
             }, 100);
         }
 
-        function showEditLocationModal(currentCity, currentName) {
+        function showEditLocationModal(city, name) {
             var modal = document.createElement('div');
             modal.className = 'modal';
             modal.innerHTML = `
                 <div class="modal-content">
-                    <h3>Edit Location</h3>
-                    <form id="editLocationForm" onsubmit="editLocation(event, '${currentCity}')">
-                        <input type="text" id="editLocationCity" placeholder="Enter city name" required value="${currentCity}" readonly style="background: var(--border-color); cursor: not-allowed;">
-                        <input type="text" id="editLocationName" placeholder="Enter display name" required value="${currentName}">
+                    <h3>Edit Location Name</h3>
+                    <form id="editLocationForm" onsubmit="editLocation(event, '${city}', '${name}')">
+                        <input type="text" id="editLocationName" value="${name}" required>
                         <div class="modal-buttons">
                             <button type="submit">Save</button>
                             <button type="button" onclick="this.closest('.modal').remove()">Cancel</button>
@@ -532,44 +534,28 @@
                 </div>
             `;
             document.body.appendChild(modal);
-
             setTimeout(() => {
                 document.getElementById('editLocationName').focus();
-                document.getElementById('editLocationName').select();
             }, 100);
         }
 
-        function editLocation(event, originalCity) {
+        function editLocation(event, city, oldName) {
             event.preventDefault();
-            var newDisplayName = document.getElementById('editLocationName').value;
-            
-            if (!newDisplayName) {
-                alert('Please enter a display name');
-                return;
-            }
-
-            // Send update request
+            var newName = document.getElementById('editLocationName').value;
             fetch('/edit_location', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ 
-                    city: originalCity,
-                    new_name: newDisplayName 
-                })
+                body: JSON.stringify({ city: city, old_name: oldName, new_name: newName })
             })
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
                     window.location.reload();
                 } else {
-                    alert('Failed to update location name');
+                    alert("Failed to edit location.");
                 }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('An error occurred while updating the location');
             });
         }
 
@@ -677,48 +663,28 @@
             document.getElementById('weatherForm').submit();
         }
 
-        function deleteLocation(city) {
-            // Prevent the click from triggering the parent's onclick
+        function confirmDeleteLocation(event, city, name) {
             event.stopPropagation();
-            
-            // Show custom confirmation dialog
-            showDeleteConfirmationModal(city);
+            if (confirm("Do you really want to remove this place from your list?")) {
+                deleteLocation(event, city, name);
+            }
         }
 
-        function showDeleteConfirmationModal(city) {
-            var modal = document.createElement('div');
-            modal.className = 'modal';
-            modal.innerHTML = `
-                <div class="modal-content">
-                    <h3>🗑️ Delete Location</h3>
-                    <p style="margin: 15px 0; color: var(--text-color);">Are you sure you want to delete this location from your saved places?</p>
-                    <p style="margin: 10px 0; font-weight: 500; color: var(--text-color);">"${city}"</p>
-                    <div class="modal-buttons">
-                        <button type="button" onclick="confirmDeleteLocation('${city}')" style="background: #dc3545; color: white;">Delete</button>
-                        <button type="button" onclick="this.closest('.modal').remove()">Cancel</button>
-                    </div>
-                </div>
-            `;
-            document.body.appendChild(modal);
-        }
-
-        function confirmDeleteLocation(city) {
-            // Close the modal
-            document.querySelector('.modal').remove();
-            
-            // Send delete request
+        function deleteLocation(event, city, name) {
+            event.stopPropagation();
             fetch('/delete_location', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ city: city })
+                body: JSON.stringify({ city: city, name: name })
             })
             .then(response => response.json())
             .then(data => {
                 if (data.success) {
-                    // Reload the page to update the locations list
                     window.location.reload();
+                } else {
+                    alert("Failed to delete location.");
                 }
             });
         }
@@ -814,6 +780,12 @@
         }
         setInterval(updateTime, 1000);
         updateTime();
+
+        function handleLocationKey(event, city) {
+            if (event.key === "Enter" || event.key === "Delete") {
+                confirmDeleteLocation(event, city);
+            }
+        }
     </script>
 </body>
 </html>

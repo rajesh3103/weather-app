@@ -20,7 +20,7 @@ def index():
             session['locations'] = []
         
         if request.method == 'POST':
-            city = request.form.get('city')
+            city = request.form.get('city').strip().lower()
             display_name = request.form.get('display_name')
             save_location = request.form.get('save_location')
             
@@ -75,14 +75,32 @@ def delete_location():
     try:
         data = request.get_json()
         city = data.get('city')
-        
+        name = data.get('name')
         if 'locations' in session:
-            session['locations'] = [loc for loc in session['locations'] if loc['city'] != city]
+            session['locations'] = [
+                loc for loc in session['locations']
+                if not (loc['city'] == city and loc['name'] == name)
+            ]
             session.modified = True
             return jsonify({'success': True})
-            
     except Exception as e:
-        print(f"Error deleting location: {e}")
+        return jsonify({'success': False, 'error': str(e)})
+
+@app.route('/edit_location', methods=['POST'])
+def edit_location():
+    try:
+        data = request.get_json()
+        city = data.get('city')
+        old_name = data.get('old_name')
+        new_name = data.get('new_name')
+        if 'locations' in session:
+            for loc in session['locations']:
+                if loc['city'] == city and loc['name'] == old_name:
+                    loc['name'] = new_name
+                    session.modified = True
+                    break
+            return jsonify({'success': True})
+    except Exception as e:
         return jsonify({'success': False, 'error': str(e)})
 
 def get_weather_type(condition):
