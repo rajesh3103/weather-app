@@ -63,11 +63,19 @@ def create_env_file():
     firebase_api_key = input("   Enter Firebase API key (optional): ").strip()
     firebase_auth_domain = ""
     firebase_project_id = ""
+    firebase_storage_bucket = ""
+    firebase_messaging_sender_id = ""
+    firebase_app_id = ""
+    firebase_measurement_id = ""
     
     if firebase_api_key:
         firebase_project_id = input("   Enter Firebase Project ID: ").strip()
         if firebase_project_id:
             firebase_auth_domain = f"{firebase_project_id}.firebaseapp.com"
+            firebase_storage_bucket = f"{firebase_project_id}.appspot.com"
+            firebase_messaging_sender_id = input("   Enter Firebase Messaging Sender ID: ").strip()
+            firebase_app_id = input("   Enter Firebase App ID: ").strip()
+            firebase_measurement_id = input("   Enter Firebase Measurement ID (optional): ").strip()
             print("   ✓ Firebase phone authentication configured")
     else:
         print("   ⚠️  Phone authentication will be disabled")
@@ -87,6 +95,10 @@ GOOGLE_CLIENT_ID={google_client_id}
 FIREBASE_API_KEY={firebase_api_key}
 FIREBASE_AUTH_DOMAIN={firebase_auth_domain}
 FIREBASE_PROJECT_ID={firebase_project_id}
+FIREBASE_STORAGE_BUCKET={firebase_storage_bucket}
+FIREBASE_MESSAGING_SENDER_ID={firebase_messaging_sender_id}
+FIREBASE_APP_ID={firebase_app_id}
+FIREBASE_MEASUREMENT_ID={firebase_measurement_id}
 
 # Setup Instructions:
 # 1. Run: pip install -r requirements.txt

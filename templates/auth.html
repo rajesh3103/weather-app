@@ -454,10 +454,10 @@
                 apiKey: "{{ firebase_api_key }}",
                 authDomain: "{{ firebase_auth_domain }}",
                 projectId: "{{ firebase_project_id }}",
-                storageBucket: "weather-app-1e424.appspot.com",
-                messagingSenderId: "241497147331",
-                appId: "1:241497147331:web:14b5c12068f5cc9a465f76",
-                measurementId: "G-8VE1RDL5D3"
+                storageBucket: "{{ firebase_project_id }}.appspot.com",
+                messagingSenderId: "{{ firebase_messaging_sender_id }}",
+                appId: "{{ firebase_app_id }}",
+                measurementId: "{{ firebase_measurement_id }}"
             };
 
             // Initialize Firebase only if configuration is complete and valid

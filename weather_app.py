@@ -23,6 +23,10 @@ GOOGLE_CLIENT_ID = os.getenv('GOOGLE_CLIENT_ID')
 FIREBASE_API_KEY = os.getenv('FIREBASE_API_KEY')
 FIREBASE_AUTH_DOMAIN = os.getenv('FIREBASE_AUTH_DOMAIN')
 FIREBASE_PROJECT_ID = os.getenv('FIREBASE_PROJECT_ID')
+FIREBASE_STORAGE_BUCKET = os.getenv('FIREBASE_STORAGE_BUCKET')
+FIREBASE_MESSAGING_SENDER_ID = os.getenv('FIREBASE_MESSAGING_SENDER_ID')
+FIREBASE_APP_ID = os.getenv('FIREBASE_APP_ID')
+FIREBASE_MEASUREMENT_ID = os.getenv('FIREBASE_MEASUREMENT_ID')
 
 TWILIO_SID = os.getenv('TWILIO_SID')
 TWILIO_TOKEN = os.getenv('TWILIO_TOKEN')
@@ -61,12 +65,20 @@ def auth_page():
     firebase_api_key = FIREBASE_API_KEY if FIREBASE_API_KEY else ""
     firebase_auth_domain = FIREBASE_AUTH_DOMAIN if FIREBASE_AUTH_DOMAIN else ""
     firebase_project_id = FIREBASE_PROJECT_ID if FIREBASE_PROJECT_ID else ""
-    #print("FIREBASE_API_KEY:", FIREBASE_API_KEY)
+    firebase_storage_bucket = FIREBASE_STORAGE_BUCKET if FIREBASE_STORAGE_BUCKET else ""
+    firebase_messaging_sender_id = FIREBASE_MESSAGING_SENDER_ID if FIREBASE_MESSAGING_SENDER_ID else ""
+    firebase_app_id = FIREBASE_APP_ID if FIREBASE_APP_ID else ""
+    firebase_measurement_id = FIREBASE_MEASUREMENT_ID if FIREBASE_MEASUREMENT_ID else ""
+    
     return render_template('auth.html', 
                          google_client_id=google_client_id,
                          firebase_api_key=firebase_api_key,
                          firebase_auth_domain=firebase_auth_domain,
                          firebase_project_id=firebase_project_id,
+                         firebase_storage_bucket=firebase_storage_bucket,
+                         firebase_messaging_sender_id=firebase_messaging_sender_id,
+                         firebase_app_id=firebase_app_id,
+                         firebase_measurement_id=firebase_measurement_id,
                          error=error_message)
 
 @app.route('/auth/google/callback')
