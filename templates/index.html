@@ -986,7 +986,22 @@
             })
             .then(response => response.json())
             .then(data => {
-                // handle response
+                if (data.success) {
+                    var phoneAuthForm = document.getElementById('phoneAuthForm');
+                    var verificationForm = document.getElementById('verificationForm');
+                    if (phoneAuthForm) phoneAuthForm.style.display = 'none';
+                    if (verificationForm) verificationForm.style.display = 'block';
+
+                    let message = 'Verification code sent to ' + phoneNumber;
+                    if (data.demo_note) {
+                        message += '\n\n📋 Demo Mode: Check the server console/terminal for your verification code.';
+                    }
+                    showSuccess(message);
+                } else {
+                    showError(data.error || 'Failed to send verification code');
+                    sendCodeBtn.disabled = false;
+                    sendCodeBtn.textContent = 'Send Verification Code';
+                }
             });
         }
 
