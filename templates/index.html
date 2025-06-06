@@ -1012,6 +1012,31 @@
                 }, 10000);
             }
         });
+
+        function resendOTP(e) {
+            e.preventDefault();
+            var resendBtn = document.getElementById('resendOtpBtn');
+            if (resendBtn) resendBtn.style.display = 'none';
+            startOtpTimer();
+            // Resend the code using the last phone input
+            let input = lastPhoneInput;
+            let countryCode = '+1';
+            let phone = input;
+            let fullPhoneNumber = '';
+            if (input.startsWith('+')) {
+                const match = input.match(/^(\+\d{1,4})(\d{6,15})$/);
+                if (match) {
+                    countryCode = match[1];
+                    phone = match[2];
+                }
+            }
+            fullPhoneNumber = countryCode + phone;
+            var countryCodeInput = document.getElementById('countryCode');
+            var phoneInput = document.getElementById('phoneNumber');
+            if (countryCodeInput) countryCodeInput.value = countryCode;
+            if (phoneInput) phoneInput.value = phone;
+            sendVerificationCodeWithNumber(fullPhoneNumber);
+        }
     </script>
 </body>
 </html>
