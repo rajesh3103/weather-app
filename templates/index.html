@@ -178,6 +178,114 @@
             z-index: 100;
         }
 
+        .user-menu {
+            position: fixed;
+            top: 20px;
+            right: 80px;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: var(--container-bg);
+            padding: 8px 15px;
+            border-radius: 25px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .user-info {
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+        }
+
+        .user-name {
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-color);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 120px;
+        }
+
+        .user-auth-method {
+            font-size: 12px;
+            color: var(--text-color);
+            opacity: 0.6;
+        }
+
+        .logout-btn {
+            background: none;
+            border: none;
+            color: #ff4444;
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .logout-btn:hover {
+            background: rgba(255, 68, 68, 0.1);
+            color: #ff6666;
+        }
+
+        .welcome-message {
+            background: var(--card-bg);
+            padding: 15px 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            border-left: 4px solid #667eea;
+        }
+
+        .welcome-message h3 {
+            margin: 0 0 5px 0;
+            color: var(--text-color);
+            font-size: 1.1em;
+        }
+
+        .welcome-message p {
+            margin: 0;
+            color: var(--text-color);
+            opacity: 0.8;
+            font-size: 0.9em;
+        }
+
+        @media (max-width: 768px) {
+            .user-menu {
+                right: 70px;
+                padding: 6px 10px;
+            }
+            
+            .user-name {
+                max-width: 80px;
+                font-size: 12px;
+            }
+            
+            .user-auth-method {
+                font-size: 11px;
+            }
+            
+            .logout-btn {
+                font-size: 11px;
+                padding: 2px 6px;
+            }
+        }
+
         .modal {
             position: fixed;
             top: 0;
@@ -400,6 +508,31 @@
 </head>
 <body>
     <div class="theme-switch" onclick="toggleTheme()" id="themeToggle">🌞</div>
+    
+    <!-- User Menu -->
+    {% if user %}
+    <div class="user-menu">
+        <div class="user-avatar">
+            {% if user.picture %}
+                <img src="{{ user.picture }}" alt="User Avatar" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">
+            {% else %}
+                {{ user.name[0].upper() if user.name else '👤' }}
+            {% endif %}
+        </div>
+        <div class="user-info">
+            <div class="user-name">{{ user.name or 'User' }}</div>
+            <div class="user-auth-method">
+                {% if user.auth_method == 'google' %}
+                    📧 Google
+                {% elif user.auth_method == 'phone' %}
+                    📱 Phone
+                {% endif %}
+            </div>
+        </div>
+        <button class="logout-btn" onclick="logout()">Logout</button>
+    </div>
+    {% endif %}
+    
     <div id="weatherBackground" class="weather-background" 
          data-weather-type="{% if weather and weather.weather_type %}{{ weather.weather_type }}{% else %}default{% endif %}">
     </div>
@@ -433,6 +566,13 @@
         </div>
 
         <div class="main-content">
+            {% if session.get('just_logged_in') %}
+            <div id="welcome-message" class="welcome-message">
+                <h3>Welcome back, {{ user.name or 'User' }}! 👋</h3>
+                <p>Your personal weather dashboard is ready. Check the weather for your saved locations or search for new ones.</p>
+            </div>
+            {% endif %}
+            
             <div class="time-row">
                 <span id="currentTime"></span>
                 {% if weather and weather.timezone %}
@@ -666,12 +806,20 @@
         function confirmDeleteLocation(event, city, name) {
             event.stopPropagation();
             if (confirm("Do you really want to remove this place from your list?")) {
-                deleteLocation(event, city, name);
+                // Add visual feedback
+                const deleteBtn = event.target;
+                const originalText = deleteBtn.innerHTML;
+                deleteBtn.innerHTML = '⏳';
+                deleteBtn.disabled = true;
+                
+                // Call delete function with error handling
+                deleteLocationWithFeedback(event, city, name, deleteBtn, originalText);
             }
         }
 
-        function deleteLocation(event, city, name) {
-            event.stopPropagation();
+        function deleteLocationWithFeedback(event, city, name, deleteBtn, originalText) {
+            console.log(`Attempting to delete location: city='${city}', name='${name}'`);
+            
             fetch('/delete_location', {
                 method: 'POST',
                 headers: {
@@ -679,14 +827,43 @@
                 },
                 body: JSON.stringify({ city: city, name: name })
             })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    window.location.reload();
-                } else {
-                    alert("Failed to delete location.");
+            .then(response => {
+                console.log('Delete response status:', response.status);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
                 }
+                return response.json();
+            })
+            .then(data => {
+                console.log('Delete response data:', data);
+                if (data.success) {
+                    console.log('Delete successful, reloading page...');
+                    // Show success feedback briefly before reload
+                    deleteBtn.innerHTML = '✓';
+                    setTimeout(() => {
+                        window.location.href = window.location.href;
+                    }, 500);
+                } else {
+                    console.error('Delete failed:', data.error);
+                    alert(`Failed to delete location: ${data.error || 'Unknown error'}`);
+                    // Restore button
+                    deleteBtn.innerHTML = originalText;
+                    deleteBtn.disabled = false;
+                }
+            })
+            .catch(error => {
+                console.error('Delete request failed:', error);
+                alert(`Error deleting location: ${error.message}`);
+                // Restore button
+                deleteBtn.innerHTML = originalText;
+                deleteBtn.disabled = false;
             });
+        }
+
+        function deleteLocation(event, city, name) {
+            // This function is kept for backward compatibility
+            // but now we use deleteLocationWithFeedback for better UX
+            deleteLocationWithFeedback(event, city, name, event.target, '&times;');
         }
 
         function addCurrentLocationToPlaces(cityName) {
@@ -731,7 +908,7 @@
             img.onload = function() {
                 // Set the background with smooth transition
                 setTimeout(() => {
-                    weatherBg.style.backgroundImage = `url('/static/media/${weatherType}.gif')`;
+                    //weatherBg.style.backgroundImage = `url('/static/media/${weatherType}.gif')`;
                     weatherBg.classList.remove("loading");
                     weatherBg.classList.add("fade-in");
                     
@@ -750,7 +927,7 @@
             };
             
             // Start loading the GIF
-            img.src = `/static/media/${weatherType}.gif`;
+           // img.src = `/static/media/${weatherType}.gif`;
         }
 
         // Initialize background on page load
@@ -786,6 +963,54 @@
                 confirmDeleteLocation(event, city);
             }
         }
+
+        // Logout function
+        function logout() {
+            if (confirm('Are you sure you want to log out?')) {
+                window.location.href = '/logout';
+            }
+        }
+
+        function sendVerificationCode() {
+            var countryCode = document.getElementById('countryCode').value;
+            var phoneNumber = document.getElementById('phoneNumber').value;
+            var fullPhoneNumber = countryCode + phoneNumber;
+
+            // Now send `fullPhoneNumber` to your backend for verification
+            // Example:
+            fetch('/send_verification', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ phone: fullPhoneNumber })
+            })
+            .then(response => response.json())
+            .then(data => {
+                // handle response
+            });
+        }
+
+        function getOtpCode() {
+            const codeInput = document.getElementById('otpInput');
+            if (!codeInput) {
+                alert("OTP input not found!");
+                return;
+            }
+            const code = codeInput.value;
+            return code;
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            var welcome = document.getElementById('welcome-message');
+            if (welcome) {
+                setTimeout(function() {
+                    welcome.style.transition = "opacity 0.5s";
+                    welcome.style.opacity = 0;
+                    setTimeout(function() {
+                        if (welcome.parentNode) welcome.parentNode.removeChild(welcome);
+                    }, 500);
+                }, 10000);
+            }
+        });
     </script>
 </body>
 </html>

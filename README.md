@@ -1,8 +1,15 @@
 # 🌦️ Weather App
 
-A modern, responsive weather application that provides real-time weather information with beautiful animated backgrounds and a sleek user interface. The app features dynamic GIF backgrounds that change based on weather conditions, location management, and theme switching.
+A modern, responsive weather application that provides real-time weather information with beautiful animated backgrounds and a sleek user interface. The app features dynamic GIF backgrounds that change based on weather conditions, location management, theme switching, and **user authentication with Google sign-in and phone number verification**.
 
 ## ✨ Features
+
+### 🔐 Authentication
+- **Google Sign-In** - Secure authentication using Google OAuth
+- **Phone Number Authentication** - SMS-based verification system
+- **User Sessions** - Persistent login sessions
+- **Personal Data** - User-specific location storage
+- **Secure Logout** - Safe session termination
 
 ### 🎨 User Interface
 - **Animated Weather Backgrounds** - Dynamic GIF backgrounds that change based on weather conditions
@@ -10,10 +17,11 @@ A modern, responsive weather application that provides real-time weather informa
 - **Responsive Design** - Optimized for desktop and mobile devices
 - **Smooth Transitions** - Beautiful fade-in animations and loading effects
 - **Modern UI** - Clean, professional design with enhanced visual effects
+- **User Profile Display** - Shows authenticated user information
 
 ### 🌍 Location Features
 - **Current Location Detection** - Automatic weather detection using GPS/geolocation
-- **Saved Locations** - Add, manage, and delete favorite locations
+- **Personal Saved Locations** - Add, manage, and delete favorite locations per user
 - **Custom Location Names** - Set display names for saved locations
 - **Quick Access** - One-click weather checking for saved locations
 
@@ -35,10 +43,11 @@ A modern, responsive weather application that provides real-time weather informa
 ## 🛠️ Technology Stack
 
 - **Frontend**: HTML5, CSS3, JavaScript (ES6+)
-- **Backend**: Python (Flask/Django - based on template syntax)
+- **Backend**: Python Flask
+- **Authentication**: Google OAuth 2.0, Firebase Phone Auth
 - **Templating**: Jinja2
 - **API**: Weather API integration
-- **Storage**: Local storage for theme preferences
+- **Storage**: Session-based user data storage
 - **Location Services**: Browser Geolocation API
 
 ## 📁 Project Structure
@@ -46,7 +55,8 @@ A modern, responsive weather application that provides real-time weather informa
 ```
 weather-app/
 ├── templates/
-│   └── index.html          # Main application template
+│   ├── index.html          # Main application template
+│   └── auth.html           # Authentication page
 ├── static/
 │   └── media/              # Animated weather backgrounds
 │       ├── default.gif     # Animated backgrounds
@@ -61,8 +71,9 @@ weather-app/
 │       ├── rainy.jpg
 │       ├── stormy.jpg
 │       └── snowy.jpg
-├── app.py                  # Main application file (backend)
+├── weather_app.py          # Main Flask application
 ├── requirements.txt        # Python dependencies
+├── .env.example           # Environment variables template
 └── README.md              # Project documentation
 ```
 
@@ -70,8 +81,53 @@ weather-app/
 
 ### Prerequisites
 - Python 3.7+
-- Weather API key (OpenWeatherMap, WeatherAPI, etc.)
+- Weather API key (WeatherAPI recommended)
+- Google Cloud Console account (for Google authentication)
+- Firebase account (for phone authentication)
 - Modern web browser
+
+### Authentication Setup
+
+#### 1. Google Authentication Setup
+1. **Go to [Google Cloud Console](https://console.cloud.google.com/)**
+2. **Create a new project** or select an existing one
+3. **Enable the Google+ API**:
+   - Go to "APIs & Services" > "Library"
+   - Search for "Google+ API" and enable it
+4. **Create OAuth 2.0 credentials**:
+   - Go to "APIs & Services" > "Credentials"
+   - Click "Create Credentials" > "OAuth client ID"
+   - Choose "Web application"
+   - Add your domain to "Authorized JavaScript origins" (e.g., `http://localhost:10000`)
+   - Add redirect URI (e.g., `http://localhost:10000http://localhost:10000/auth/google`)
+5. **Copy the Client ID** for your `.env` file
+
+#### 2. Firebase Phone Authentication Setup
+1. **Go to [Firebase Console](https://console.firebase.google.com/)**
+2. **Create a new project** or select existing
+3. **Enable Authentication**:
+   - Go to "Authentication" > "Sign-in method"
+   - Enable "Phone" authentication
+4. **Get configuration**:
+   - Go to "Project settings" > "General"
+   - Scroll down to "Your apps" and copy the config
+5. **Add your domain** to authorized domains in Authentication settings
+
+#### 3. Environment Variables Setup
+Create a `.env` file in your project root with:
+
+```env
+# Weather API Configuration
+WEATHER_API_KEY=your_weather_api_key_here
+
+# Google Authentication Configuration
+GOOGLE_CLIENT_ID=your_google_client_id_here.apps.googleusercontent.com
+
+# Firebase Configuration (for phone authentication)
+FIREBASE_API_KEY=your_firebase_api_key_here
+FIREBASE_AUTH_DOMAIN=your_project_id.firebaseapp.com
+FIREBASE_PROJECT_ID=your_firebase_project_id_here
+```
 
 ### Installation Steps
 
@@ -87,9 +143,8 @@ weather-app/
    ```
 
 3. **Set up environment variables**
-   ```bash
-   export WEATHER_API_KEY="your_api_key_here"
-   ```
+   - Copy `.env.example` to `.env`
+   - Fill in your actual API keys and configuration values
 
 4. **Add animated weather backgrounds**
    - Place weather-themed animated GIFs in `static/media/`
@@ -99,13 +154,24 @@ weather-app/
 
 5. **Run the application**
    ```bash
-   python app.py
+   python weather_app.py
    ```
 
 6. **Open in browser**
-   - Navigate to `http://localhost:5000`
+   - Navigate to `http://localhost:10000`
+   - You'll be redirected to the authentication page
 
 ## 📱 Usage
+
+### Authentication
+1. **First Visit**: You'll be redirected to the authentication page
+2. **Google Sign-In**: Click "Continue with Google" for instant authentication
+3. **Phone Authentication**: 
+   - Click "Continue with Phone Number"
+   - Enter your phone number (with country code, e.g., +1234567890)
+   - Enter the 6-digit verification code sent via SMS
+4. **Session Management**: Stay logged in across browser sessions
+5. **Logout**: Click the logout button in the user menu
 
 ### Getting Weather Information
 1. **Search by City**: Enter a city name in the search box and click "Get Weather"
@@ -116,6 +182,7 @@ weather-app/
 1. **Add Location**: Click "+ Add Location" button
 2. **Custom Names**: Set display names for easy identification
 3. **Delete Locations**: Hover over a location and click the × button
+4. **Personal Storage**: Each user has their own saved locations
 
 ### Theme Switching
 - Click the 🌞/🌜 icon in the top-right corner to toggle themes
@@ -125,9 +192,15 @@ weather-app/
 
 ### Weather API Setup
 The app requires a weather API key. Supported APIs:
+- [WeatherAPI](https://weatherapi.com/) (Recommended)
 - OpenWeatherMap
-- WeatherAPI
 - AccuWeather
+
+### Authentication Security
+- **Session Management**: Secure server-side sessions
+- **Token Verification**: Google tokens are verified server-side
+- **Rate Limiting**: Phone verification has attempt limits
+- **Expiration**: Verification codes expire after 5 minutes
 
 ### Animated Background Images
 Add weather-themed animated GIFs to `static/media/` with these naming conventions:
@@ -148,16 +221,14 @@ Add weather-themed animated GIFs to `static/media/` with these naming convention
 - `stormy.jpg` - Static thunderstorms
 - `snowy.jpg` - Static snow conditions
 
-**Features:**
-- Automatic GIF detection with JPG fallback
-- Smooth fade-in animations
-- Weather-specific visual effects (blur, brightness, contrast)
-- Preloading system for better performance
+## 🔐 Security Features
 
-### Customization
-- Modify CSS variables in the `:root` selectors for theme colors
-- Adjust layout breakpoints for responsive design
-- Customize weather condition mappings in the backend
+- **OAuth 2.0**: Industry-standard Google authentication
+- **Phone Verification**: SMS-based two-factor authentication
+- **Session Security**: Secure session management
+- **CSRF Protection**: Built-in Flask security
+- **Token Validation**: Server-side token verification
+- **Rate Limiting**: Prevents authentication abuse
 
 ## 🌐 Browser Support
 
@@ -168,6 +239,12 @@ Add weather-themed animated GIFs to `static/media/` with these naming convention
 
 ## 📊 Features in Detail
 
+### Authentication System
+- Multiple authentication methods (Google, Phone)
+- Persistent user sessions
+- User profile display
+- Secure logout functionality
+
 ### Theme System
 - Automatic theme detection based on system preferences
 - Manual toggle with instant switching
@@ -175,8 +252,9 @@ Add weather-themed animated GIFs to `static/media/` with these naming convention
 
 ### Location Management
 - Geolocation API integration for current position
-- CRUD operations for saved locations
+- CRUD operations for saved locations per user
 - Temperature caching for quick access
+- User-specific data isolation
 
 ### Weather Display
 - Real-time weather data
@@ -193,6 +271,9 @@ Add weather-themed animated GIFs to `static/media/` with these naming convention
 - [ ] Mobile app version
 - [ ] Weather widgets
 - [ ] Social sharing features
+- [ ] Database storage for users and locations
+- [ ] Email notifications
+- [ ] Weather history tracking
 
 ## 🤝 Contributing
 
@@ -208,13 +289,14 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ## 👨‍💻 Author
 
-Created by **Rajesh** - A modern weather application for everyday use.
+Created by **Rajesh** - A modern weather application with secure authentication for everyday use.
 
 ## 🐛 Known Issues
 
 - Background images require manual addition
 - Some weather conditions may not have specific backgrounds
 - Geolocation requires HTTPS in production
+- Phone authentication requires SMS service setup for production use
 
 ## 📞 Support
 
@@ -222,4 +304,4 @@ For support, please open an issue on GitHub or contact the development team.
 
 ---
 
-*Enjoy checking the weather with style! 🌤️*
+*Enjoy checking the weather with style and security! 🌤️🔐*
