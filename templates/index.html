@@ -898,6 +898,7 @@
         // Enhanced animated background setter
         function setWeatherBackground() {
             var weatherBg = document.getElementById("weatherBackground");
+            if (!weatherBg) return;
             var weatherType = weatherBg.getAttribute("data-weather-type");
             
             // Add loading state
