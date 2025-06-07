@@ -3,15 +3,10 @@ import requests
 import os
 from dotenv import load_dotenv
 from datetime import datetime
-import re
 # Authentication imports
 from google.oauth2 import id_token
 from google.auth.transport import requests as google_requests
 import jwt
-import random
-import string
-import time
-from twilio.rest import Client
 
 app = Flask(__name__)
 app.secret_key = 'your-secret-key-here'
@@ -27,10 +22,6 @@ FIREBASE_STORAGE_BUCKET = os.getenv('FIREBASE_STORAGE_BUCKET')
 FIREBASE_MESSAGING_SENDER_ID = os.getenv('FIREBASE_MESSAGING_SENDER_ID')
 FIREBASE_APP_ID = os.getenv('FIREBASE_APP_ID')
 FIREBASE_MEASUREMENT_ID = os.getenv('FIREBASE_MEASUREMENT_ID')
-
-TWILIO_SID = os.getenv('TWILIO_SID')
-TWILIO_TOKEN = os.getenv('TWILIO_TOKEN')
-TWILIO_FROM = os.getenv('TWILIO_FROM')
 
 # Print configuration status
 print("=== Authentication Configuration ===")
@@ -377,14 +368,6 @@ def get_weather_type(condition):
     elif any(word in condition for word in ['clear', 'sunny']):
         return 'clear'
     return 'default'
-
-def send_sms(to, message):
-    client = Client(TWILIO_SID, TWILIO_TOKEN)
-    client.messages.create(
-        body=message,
-        from_=TWILIO_FROM,
-        to=to
-    )
 
 if __name__ == '__main__':
     os.makedirs('static/media', exist_ok=True)
