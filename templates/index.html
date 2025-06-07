@@ -176,6 +176,15 @@
             cursor: pointer;
             font-size: 24px;
             z-index: 100;
+            background: var(--container-bg);
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            transition: all 0.3s ease;
         }
 
         .user-menu {
@@ -187,10 +196,11 @@
             align-items: center;
             gap: 10px;
             background: var(--container-bg);
-            padding: 8px 15px;
+            padding: 8px;
             border-radius: 25px;
             box-shadow: 0 2px 10px rgba(0,0,0,0.1);
             backdrop-filter: blur(10px);
+            cursor: pointer;
         }
 
         .user-avatar {
@@ -207,41 +217,70 @@
         }
 
         .user-info {
-            display: flex;
-            flex-direction: column;
-            min-width: 0;
+            display: none;
         }
 
-        .user-name {
+        .user-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            margin-top: 8px;
+            background: var(--container-bg);
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+            padding: 8px;
+            display: none;
+            min-width: 200px;
+            opacity: 0;
+            transform: translateY(-10px);
+            transition: opacity 0.2s ease, transform 0.2s ease;
+        }
+
+        .user-dropdown.show {
+            display: block;
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .dropdown-header {
+            padding: 8px 16px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .dropdown-header .user-name {
             font-size: 14px;
             font-weight: 500;
             color: var(--text-color);
-            white-space: nowrap;
-            overflow: hidden;
-            text-overflow: ellipsis;
-            max-width: 120px;
+            margin-bottom: 4px;
         }
 
-        .user-auth-method {
+        .dropdown-header .user-email {
             font-size: 12px;
             color: var(--text-color);
-            opacity: 0.6;
+            opacity: 0.7;
         }
 
-        .logout-btn {
-            background: none;
-            border: none;
-            color: #ff4444;
+        .dropdown-content {
+            padding: 8px 0;
+        }
+
+        .dropdown-item {
+            padding: 8px 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--text-color);
+            text-decoration: none;
+            transition: all 0.2s ease;
             cursor: pointer;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 12px;
-            transition: all 0.3s ease;
         }
 
-        .logout-btn:hover {
-            background: rgba(255, 68, 68, 0.1);
-            color: #ff6666;
+        .dropdown-item:hover {
+            background: rgba(0,0,0,0.05);
+        }
+
+        .dropdown-item.logout {
+            color: #ff4444;
         }
 
         .welcome-message {
@@ -504,33 +543,66 @@
                 opacity: 0;
             }
         }
+
+        .login-button {
+            position: fixed;
+            top: 20px;
+            right: 80px;
+            z-index: 100;
+            padding: 8px 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 25px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .login-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
     </style>
 </head>
 <body>
     <div class="theme-switch" onclick="toggleTheme()" id="themeToggle">🌞</div>
     
-    <!-- User Menu -->
+    <!-- User Menu or Login Button -->
     {% if user %}
-    <div class="user-menu">
-        <div class="user-avatar">
+    <div class="user-menu" id="userMenu">
+        <div class="user-avatar" id="userAvatar">
             {% if user.picture %}
                 <img src="{{ user.picture }}" alt="User Avatar" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">
             {% else %}
                 {{ user.name[0].upper() if user.name else '👤' }}
             {% endif %}
         </div>
-        <div class="user-info">
-            <div class="user-name">{{ user.name or 'User' }}</div>
-            <div class="user-auth-method">
-                {% if user.auth_method == 'google' %}
-                    📧 Google
-                {% elif user.auth_method == 'phone' %}
-                    📱 Phone
-                {% endif %}
+        <div class="user-dropdown" id="userDropdown">
+            <div class="dropdown-header">
+                <div class="user-name">{{ user.name or 'User' }}</div>
+                <div class="user-email">{{ user.email }}</div>
+            </div>
+            <div class="dropdown-content">
+                <div class="dropdown-item">
+                    <span>🌐 {{ user.auth_method|title }} Account</span>
+                </div>
+                <div class="dropdown-item logout" onclick="logout()">
+                    <span>🚪 Logout</span>
+                </div>
             </div>
         </div>
-        <button class="logout-btn" onclick="logout()">Logout</button>
     </div>
+    {% else %}
+    <a href="{{ url_for('auth_page') }}" class="login-button">
+        <span>🔑 Sign in</span>
+    </a>
     {% endif %}
     
     <div id="weatherBackground" class="weather-background" 
@@ -540,29 +612,40 @@
     <div class="layout">
         <div class="sidebar">
             <h2>My Places</h2>
+            {% if not is_authenticated %}
+            <div style="padding: 10px; background: var(--card-bg); border-radius: 8px; margin-bottom: 15px;">
+                <p style="margin: 0; font-size: 14px; color: var(--text-color);">
+                    ✨ <a href="{{ url_for('auth_page') }}" style="color: var(--primary-color); text-decoration: none;">Sign in</a> to save your favorite locations!
+                </p>
+            </div>
+            {% endif %}
             <ul class="location-list">
                 <li class="location-item" onclick="getLocation()">
                     <div class="location-info">
                         <div class="location-name">📍 Current Location</div>
                     </div>
                 </li>
-                {% for location in locations %}
-                <li class="location-item">
-                    <div class="location-info" onclick="getWeather('{{ location.city }}')">
-                        <div class="location-name">{{ location.name }}</div>
-                        <div class="location-temp">{{ location.temp }}°C</div>
-                    </div>
-                    <button class="edit-btn" onclick="showEditLocationModal('{{ location.city|e }}', '{{ location.name|e }}')">✎</button>
-                    <button class="delete-btn"
-                            tabindex="0"
-                            onclick="confirmDeleteLocation(event, '{{ location.city|e }}', '{{ location.name|e }}')"
-                            onkeydown="if(event.key==='Enter'||event.key===' '){confirmDeleteLocation(event, '{{ location.city|e }}', '{{ location.name|e }}');}">
-                        &times;
-                    </button>
-                </li>
-                {% endfor %}
+                {% if is_authenticated %}
+                    {% for location in locations %}
+                    <li class="location-item">
+                        <div class="location-info" onclick="getWeather('{{ location.city }}')">
+                            <div class="location-name">{{ location.name }}</div>
+                            <div class="location-temp">{{ location.temp }}°C</div>
+                        </div>
+                        <button class="edit-btn" onclick="showEditLocationModal('{{ location.city|e }}', '{{ location.name|e }}')">✎</button>
+                        <button class="delete-btn"
+                                tabindex="0"
+                                onclick="confirmDeleteLocation(event, '{{ location.city|e }}', '{{ location.name|e }}')"
+                                onkeydown="if(event.key==='Enter'||event.key===' '){confirmDeleteLocation(event, '{{ location.city|e }}', '{{ location.name|e }}');}">
+                            &times;
+                        </button>
+                    </li>
+                    {% endfor %}
+                {% endif %}
             </ul>
+            {% if is_authenticated %}
             <button onclick="showAddLocationModal()" class="add-btn">+ Add Location</button>
+            {% endif %}
         </div>
 
         <div class="main-content">
@@ -590,9 +673,15 @@
             <div class="weather-details">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
                     <h2>🌦️ Weather in {{ weather.location }}</h2>
+                    {% if is_authenticated %}
                     <button onclick="addCurrentLocationToPlaces('{{ weather.location }}')" class="add-to-places-btn">
                         ⭐ Add to My Places
                     </button>
+                    {% else %}
+                    <a href="{{ url_for('auth_page') }}" class="add-to-places-btn" style="text-decoration: none;">
+                        🔑 Sign in to save locations
+                    </a>
+                    {% endif %}
                 </div>
                 <p>🌡️ Temperature: {{ weather.temp_c }}°C</p>
                 <p>🌤️ Condition: {{ weather.condition }}</p>
@@ -1052,6 +1141,33 @@
             if (phoneInput) phoneInput.value = phone;
             sendVerificationCodeWithNumber(fullPhoneNumber);
         }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            const userMenu = document.getElementById('userMenu');
+            const userAvatar = document.getElementById('userAvatar');
+            const userDropdown = document.getElementById('userDropdown');
+            let isDropdownOpen = false;
+
+            // Toggle dropdown on avatar click
+            userAvatar.addEventListener('click', function(e) {
+                e.stopPropagation();
+                isDropdownOpen = !isDropdownOpen;
+                userDropdown.classList.toggle('show');
+            });
+
+            // Close dropdown when clicking outside
+            document.addEventListener('click', function(e) {
+                if (isDropdownOpen && !userDropdown.contains(e.target) && !userAvatar.contains(e.target)) {
+                    userDropdown.classList.remove('show');
+                    isDropdownOpen = false;
+                }
+            });
+
+            // Prevent dropdown from closing when clicking inside it
+            userDropdown.addEventListener('click', function(e) {
+                e.stopPropagation();
+            });
+        });
     </script>
 </body>
 </html>

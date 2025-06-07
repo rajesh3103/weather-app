@@ -99,141 +99,28 @@
             gap: 15px;
         }
 
-        .auth-btn {
+        .google-btn {
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 12px;
             padding: 15px 20px;
-            border: none;
+            background: #ffffff;
+            color: #333;
+            border: 2px solid #e0e0e0;
             border-radius: 50px;
             font-size: 16px;
             font-weight: 500;
             cursor: pointer;
             transition: all 0.3s ease;
             text-decoration: none;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .google-btn {
-            background: #ffffff;
-            color: #333;
-            border: 2px solid #e0e0e0;
+            width: 100%;
         }
 
         .google-btn:hover {
             background: #f8f9fa;
             transform: translateY(-2px);
             box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
-        }
-
-        .phone-btn {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border: none;
-        }
-
-        .phone-btn:hover {
-            background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
-        }
-
-        .auth-btn:active {
-            transform: translateY(0);
-        }
-
-        .divider {
-            margin: 20px 0;
-            position: relative;
-            text-align: center;
-        }
-
-        .divider::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 0;
-            right: 0;
-            height: 1px;
-            background: var(--border-color);
-        }
-
-        .divider span {
-            background: var(--container-bg);
-            padding: 0 15px;
-            color: var(--text-color);
-            opacity: 0.6;
-            font-size: 14px;
-        }
-
-        .phone-input-section {
-            display: none;
-            margin-top: 20px;
-            text-align: left;
-        }
-
-        .phone-input-section.active {
-            display: block;
-            animation: slideDown 0.3s ease;
-        }
-
-        @keyframes slideDown {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .input-group {
-            margin-bottom: 15px;
-        }
-
-        label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: 500;
-            color: var(--text-color);
-        }
-
-        input[type="tel"], input[type="text"] {
-            width: 100%;
-            padding: 12px 15px;
-            border: 2px solid var(--border-color);
-            border-radius: 10px;
-            font-size: 16px;
-            background: var(--card-bg);
-            color: var(--text-color);
-            transition: all 0.3s ease;
-        }
-
-        input[type="tel"]:focus, input[type="text"]:focus {
-            outline: none;
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
-        }
-
-        .submit-btn {
-            width: 100%;
-            padding: 12px;
-            background: var(--success-color);
-            color: white;
-            border: none;
-            border-radius: 10px;
-            font-size: 16px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        .submit-btn:hover {
-            background: #218838;
-            transform: translateY(-1px);
-        }
-
-        .submit-btn:disabled {
-            background: #6c757d;
-            cursor: not-allowed;
-            transform: none;
         }
 
         .theme-switch {
@@ -267,15 +154,6 @@
             border: 1px solid rgba(220, 53, 69, 0.3);
         }
 
-        .success {
-            background: rgba(40, 167, 69, 0.1);
-            color: var(--success-color);
-            padding: 10px;
-            border-radius: 8px;
-            margin-bottom: 20px;
-            border: 1px solid rgba(40, 167, 69, 0.3);
-        }
-
         .back-to-app {
             margin-top: 20px;
             text-align: center;
@@ -300,16 +178,8 @@
             h1 {
                 font-size: 1.5rem;
             }
-            
-            .auth-btn {
-                padding: 12px 16px;
-                font-size: 14px;
-            }
         }
     </style>
-    <!-- Firebase SDK for Phone Auth only -->
-    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.0.0/firebase-auth-compat.js"></script>
 </head>
 <body>
     <div class="theme-switch" onclick="toggleTheme()" id="themeToggle">🌞</div>
@@ -317,38 +187,17 @@
     <div class="auth-container">
         <div class="logo">☁️</div>
         <h1>Welcome</h1>
-        <p class="subtitle">Sign in to access your personal weather dashboard</p>
+        <p class="subtitle">Sign in with Google to access your personal weather dashboard</p>
         
         {% if error %}
         <div class="error">{{ error }}</div>
         {% endif %}
         
-        {% if success %}
-        <div class="success">{{ success }}</div>
-        {% endif %}
-        
         <div class="auth-methods">
-            <form id="unifiedLoginForm" onsubmit="handleUnifiedLogin(event)">
-                <div class="input-group" id="phoneInputGroup">
-                    <label for="unifiedInput">Enter Email/Mobile number</label>
-                    <input type="text" id="unifiedInput" name="unifiedInput" placeholder="Enter Email/Mobile number" required autocomplete="username">
-                </div>
-                <button type="submit" class="submit-btn" id="unifiedLoginBtn">Request OTP</button>
-            </form>
-            <div id="otpSection" style="display:none;">
-                <div id="otpMessage" style="margin-bottom: 10px;"></div>
-                <form id="verificationForm" onsubmit="verifyCode(event)">
-                    <div class="input-group">
-                        <label for="verificationCode">Verification Code</label>
-                        <input type="text" id="verificationCode" name="code" placeholder="123456" required>
-                    </div>
-                    <button type="submit" class="submit-btn" id="verifyCodeBtn">Verify Code</button>
-                </form>
-                <div style="margin-top:10px;">
-                    <span id="otpTimer">00:15</span>
-                    <button id="resendOtpBtn" class="submit-btn" style="display:none; margin-left:10px; background:#007bff;" onclick="resendOTP(event)">Resend OTP</button>
-                </div>
-            </div>
+            <button onclick="signInWithGoogle()" class="google-btn">
+                <img src="https://www.google.com/favicon.ico" alt="Google" width="20" height="20">
+                Continue with Google
+            </button>
         </div>
         
         <div class="back-to-app">
@@ -356,86 +205,12 @@
         </div>
     </div>
 
-    <!-- Firebase Configuration for Phone Auth -->
-    <div id="recaptcha-container"></div>
-
     <script>
         // Theme management
         document.addEventListener('DOMContentLoaded', function() {
             var savedTheme = localStorage.getItem('theme') || 'light';
             document.documentElement.setAttribute('data-theme', savedTheme);
             document.getElementById('themeToggle').textContent = savedTheme === 'light' ? '🌞' : '🌜';
-            
-            // Initialize Firebase for phone auth
-            initializeFirebase();
-            // Populate country code select
-            var countryCodeSelect = document.getElementById('countryCode');
-            if (countryCodeSelect) {
-                countryCodeSelect.innerHTML = `
-                    <option value="+1">🇺🇸 +1 (United States)</option>
-                    <option value="+91">🇮🇳 +91 (India)</option>
-                    <option value="+44">🇬🇧 +44 (United Kingdom)</option>
-                    <option value="+61">🇦🇺 +61 (Australia)</option>
-                    <option value="+81">🇯🇵 +81 (Japan)</option>
-                    <option value="+49">🇩🇪 +49 (Germany)</option>
-                    <option value="+33">🇫🇷 +33 (France)</option>
-                    <option value="+39">🇮🇹 +39 (Italy)</option>
-                    <option value="+86">🇨🇳 +86 (China)</option>
-                    <option value="+7">🇷🇺 +7 (Russia)</option>
-                    <option value="+34">🇪🇸 +34 (Spain)</option>
-                    <option value="+55">🇧🇷 +55 (Brazil)</option>
-                    <option value="+27">🇿🇦 +27 (South Africa)</option>
-                    <option value="+82">🇰🇷 +82 (South Korea)</option>
-                    <option value="+62">🇮🇩 +62 (Indonesia)</option>
-                    <option value="+234">🇳🇬 +234 (Nigeria)</option>
-                    <option value="+90">🇹🇷 +90 (Turkey)</option>
-                    <option value="+966">🇸🇦 +966 (Saudi Arabia)</option>
-                    <option value="+971">🇦🇪 +971 (UAE)</option>
-                    <option value="+92">🇵🇰 +92 (Pakistan)</option>
-                    <option value="+880">🇧🇩 +880 (Bangladesh)</option>
-                    <option value="+20">🇪🇬 +20 (Egypt)</option>
-                    <option value="+964">🇮🇶 +964 (Iraq)</option>
-                    <option value="+98">🇮🇷 +98 (Iran)</option>
-                    <option value="+972">🇮🇱 +972 (Israel)</option>
-                    <option value="+63">🇵🇭 +63 (Philippines)</option>
-                    <option value="+60">🇲🇾 +60 (Malaysia)</option>
-                    <option value="+66">🇹🇭 +66 (Thailand)</option>
-                    <option value="+84">🇻🇳 +84 (Vietnam)</option>
-                    <option value="+351">🇵🇹 +351 (Portugal)</option>
-                    <option value="+31">🇳🇱 +31 (Netherlands)</option>
-                    <option value="+32">🇧🇪 +32 (Belgium)</option>
-                    <option value="+46">🇸🇪 +46 (Sweden)</option>
-                    <option value="+47">🇳🇴 +47 (Norway)</option>
-                    <option value="+358">🇫🇮 +358 (Finland)</option>
-                    <option value="+48">🇵🇱 +48 (Poland)</option>
-                    <option value="+420">🇨🇿 +420 (Czech Republic)</option>
-                    <option value="+421">🇸🇰 +421 (Slovakia)</option>
-                    <option value="+36">🇭🇺 +36 (Hungary)</option>
-                    <option value="+43">🇦🇹 +43 (Austria)</option>
-                    <option value="+41">🇨🇭 +41 (Switzerland)</option>
-                    <option value="+45">🇩🇰 +45 (Denmark)</option>
-                    <option value="+353">🇮🇪 +353 (Ireland)</option>
-                    <option value="+380">🇺🇦 +380 (Ukraine)</option>
-                    <option value="+40">🇷🇴 +40 (Romania)</option>
-                    <option value="+386">🇸🇮 +386 (Slovenia)</option>
-                    <option value="+385">🇭🇷 +385 (Croatia)</option>
-                    <option value="+381">🇷🇸 +381 (Serbia)</option>
-                    <option value="+382">🇲🇪 +382 (Montenegro)</option>
-                    <option value="+389">🇲🇰 +389 (North Macedonia)</option>
-                    <option value="+375">🇧🇾 +375 (Belarus)</option>
-                    <option value="+994">🇦🇿 +994 (Azerbaijan)</option>
-                    <option value="+995">🇬🇪 +995 (Georgia)</option>
-                    <option value="+373">🇲🇩 +373 (Moldova)</option>
-                    <option value="+998">🇺🇿 +998 (Uzbekistan)</option>
-                    <option value="+993">🇹🇲 +993 (Turkmenistan)</option>
-                    <option value="+996">🇰🇬 +996 (Kyrgyzstan)</option>
-                    <option value="+992">🇹🇯 +992 (Tajikistan)</option>
-                    <option value="+976">🇲🇳 +976 (Mongolia)</option>
-                    <option value="+94">🇱🇰 +94 (Sri Lanka)</option>
-                    <option value="+65">🇸🇬 +65 (Singapore)</option>
-                    <option value="+64">🇳🇿 +64 (New Zealand)</option>
-                `;
-            }
         });
 
         function toggleTheme() {
@@ -446,55 +221,6 @@
             html.setAttribute('data-theme', newTheme);
             themeToggle.textContent = newTheme === 'light' ? '🌞' : '🌜';
             localStorage.setItem('theme', newTheme);
-        }
-
-        // Firebase Configuration
-        function initializeFirebase() {
-            const firebaseConfig = {
-                apiKey: "{{ firebase_api_key }}",
-                authDomain: "{{ firebase_auth_domain }}",
-                projectId: "{{ firebase_project_id }}",
-                storageBucket: "{{ firebase_project_id }}.appspot.com",
-                messagingSenderId: "{{ firebase_messaging_sender_id }}",
-                appId: "{{ firebase_app_id }}",
-                measurementId: "{{ firebase_measurement_id }}"
-            };
-
-            // Initialize Firebase only if configuration is complete and valid
-            window.firebaseInitialized = false;
-            
-            // Check if we have valid Firebase configuration
-            const hasValidConfig = firebaseConfig.apiKey && 
-                firebaseConfig.apiKey !== "" && 
-                firebaseConfig.apiKey !== "None" &&
-                firebaseConfig.authDomain && 
-                firebaseConfig.authDomain !== "" && 
-                firebaseConfig.authDomain !== "None" &&
-                firebaseConfig.projectId && 
-                firebaseConfig.projectId !== "" && 
-                firebaseConfig.projectId !== "None";
-
-            if (!hasValidConfig) {
-                console.log("Firebase configuration incomplete - phone auth will use server fallback");
-                // Don't try to initialize Firebase or load Firebase scripts
-                window.firebaseInitialized = false;
-                return;
-            }
-
-            // Only try to initialize if Firebase is loaded
-            if (typeof firebase !== 'undefined') {
-                try {
-                    firebase.initializeApp(firebaseConfig);
-                    window.firebaseInitialized = true;
-                    console.log("Firebase initialized successfully");
-                } catch (error) {
-                    console.log("Firebase initialization failed, using server fallback:", error.message);
-                    window.firebaseInitialized = false;
-                }
-            } else {
-                console.log("Firebase SDK not loaded, using server fallback");
-                window.firebaseInitialized = false;
-            }
         }
 
         // Google Sign-In
@@ -519,184 +245,6 @@
             }, 500);
         }
 
-        // Phone Authentication
-        let confirmationResult = null;
-        let otpTimerInterval = null;
-        let otpTimerSeconds = 15;
-        let lastPhoneInput = '';
-
-        function togglePhoneAuth() {
-            const phoneSection = document.getElementById('phoneAuthSection');
-            phoneSection.classList.toggle('active');
-        }
-
-        function sendVerificationCode(event) {
-            event.preventDefault();
-            const countryCode = document.getElementById('countryCode').value;
-            const phoneNumber = document.getElementById('phoneNumber').value;
-            const fullPhoneNumber = countryCode + phoneNumber;
-            const sendCodeBtn = document.getElementById('sendCodeBtn');
-            sendCodeBtn.disabled = true;
-            sendCodeBtn.textContent = 'Sending...';
-            // Check if Firebase is properly initialized
-            if (!window.firebaseInitialized) {
-                console.log("Firebase not initialized, using server-side phone auth");
-                sendVerificationCodeServer(fullPhoneNumber, sendCodeBtn);
-                return;
-            }
-            // Initialize reCAPTCHA only if Firebase is configured
-            if (typeof firebase !== 'undefined' && firebase.auth) {
-                try {
-                    window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {
-                        'size': 'invisible',
-                        'callback': function(response) {
-                            console.log("reCAPTCHA solved");
-                        },
-                        'expired-callback': function() {
-                            console.log("reCAPTCHA expired");
-                        }
-                    });
-                    const appVerifier = window.recaptchaVerifier;
-                    firebase.auth().signInWithPhoneNumber(fullPhoneNumber, appVerifier)
-                        .then(function (confirmationResult) {
-                            window.confirmationResult = confirmationResult;
-                            console.log("confirmationResult:", window.confirmationResult);
-                            document.getElementById('phoneAuthForm').style.display = 'none';
-                            document.getElementById('verificationForm').style.display = 'block';
-                            showSuccess('Verification code sent to ' + fullPhoneNumber);
-                        })
-                        .catch(function (error) {
-                            console.error("Firebase phone auth error:", error);
-                            showError('Error sending verification code: ' + error.message);
-                            sendCodeBtn.disabled = false;
-                            sendCodeBtn.textContent = 'Send Verification Code';
-                        });
-                } catch (error) {
-                    console.error("Firebase initialization error:", error);
-                    showError('Firebase configuration error. Using fallback method.');
-                    sendVerificationCodeServer(fullPhoneNumber, sendCodeBtn);
-                }
-            } else {
-                console.log("Firebase not available, using server fallback");
-                sendVerificationCodeServer(fullPhoneNumber, sendCodeBtn);
-            }
-        }
-
-        function sendVerificationCodeServer(phoneNumber, sendCodeBtn) {
-            // Fallback - send request to server
-            fetch('/auth/phone/send', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    phone: phoneNumber
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    document.getElementById('phoneAuthForm').style.display = 'none';
-                    document.getElementById('verificationForm').style.display = 'block';
-                    
-                    let message = 'Verification code sent to ' + phoneNumber;
-                    if (data.demo_note) {
-                        message += '\n\n📋 Demo Mode: Check the server console/terminal for your verification code.';
-                    }
-                    showSuccess(message);
-                } else {
-                    showError(data.error || 'Failed to send verification code');
-                    sendCodeBtn.disabled = false;
-                    sendCodeBtn.textContent = 'Send Verification Code';
-                }
-            })
-            .catch(error => {
-                showError('Network error: ' + error.message);
-                sendCodeBtn.disabled = false;
-                sendCodeBtn.textContent = 'Send Verification Code';
-            });
-        }
-
-        function verifyCode(event) {
-            event.preventDefault();
-            console.log(document.getElementById('verificationCode'));
-            const codeInput = document.getElementById('verificationCode');
-            if (!codeInput) {
-                showError("Verification code input not found!");
-                return;
-            }
-            const code = codeInput.value;
-            const verifyBtn = document.getElementById('verifyCodeBtn');
-            
-            verifyBtn.disabled = true;
-            verifyBtn.textContent = 'Verifying...';
-
-            if (window.confirmationResult && typeof window.confirmationResult.confirm === "function") {
-                window.confirmationResult.confirm(code).then(function (result) {
-                    const user = result.user;
-                    // Send to server for session creation (NO code, just UID and phone)
-                    fetch('/auth/phone/verify', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                            uid: user.uid,
-                            phone: user.phoneNumber
-                        })
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            window.location.href = data.redirect || '/';
-                        } else {
-                            showError(data.error || 'Authentication failed');
-                        }
-                    });
-                }).catch(function (error) {
-                    showError('Invalid verification code');
-                    verifyBtn.disabled = false;
-                    verifyBtn.textContent = 'Verify Code';
-                });
-            } else {
-                // Server-side verification
-                fetch('/auth/phone/verify', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        phone: lastPhoneInput,
-                        code: code
-                    })
-                })
-                .then(response => response.json())
-                .then(data => {
-                    if (data.success) {
-                        window.location.href = data.redirect || '/';
-                    } else {
-                        showError(data.error || 'Invalid verification code');
-                        verifyBtn.disabled = false;
-                        verifyBtn.textContent = 'Verify Code';
-                    }
-                })
-                .catch(error => {
-                    showError('Network error: ' + error.message);
-                    verifyBtn.disabled = false;
-                    verifyBtn.textContent = 'Verify Code';
-                });
-            }
-        }
-
-        function resetPhoneAuth() {
-            document.getElementById('phoneAuthForm').style.display = 'block';
-            document.getElementById('verificationForm').style.display = 'none';
-            document.getElementById('phoneNumber').value = '';
-            document.getElementById('verificationCode').value = '';
-            document.getElementById('sendCodeBtn').disabled = false;
-            document.getElementById('sendCodeBtn').textContent = 'Send Verification Code';
-        }
-
         function showError(message) {
             // Remove existing alerts
             const existingAlert = document.querySelector('.error');
@@ -706,147 +254,6 @@
             errorDiv.className = 'error';
             errorDiv.textContent = message;
             document.querySelector('.auth-methods').before(errorDiv);
-        }
-
-        function showSuccess(message) {
-            // Remove existing alerts
-            const existingAlert = document.querySelector('.success');
-            if (existingAlert) existingAlert.remove();
-            
-            const successDiv = document.createElement('div');
-            successDiv.className = 'success';
-            successDiv.style.whiteSpace = 'pre-line'; // Allow line breaks
-            successDiv.textContent = message;
-            document.querySelector('.auth-methods').before(successDiv);
-        }
-
-        function handleUnifiedLogin(event) {
-            event.preventDefault();
-            const input = document.getElementById('unifiedInput').value.trim();
-            const gmailRegex = /^[a-zA-Z0-9._%+-]+@gmail\.com$/i;
-            const phoneRegex = /^\+?\d{7,16}$/;
-            if (gmailRegex.test(input)) {
-                signInWithGoogle();
-            } else if (phoneRegex.test(input)) {
-                lastPhoneInput = input;
-                document.getElementById('unifiedLoginForm').style.display = 'none';
-                showOtpSection(input);
-                // Always build full E.164 phone number
-                let countryCode = '+1';
-                let phone = input;
-                let fullPhoneNumber = '';
-                if (input.startsWith('+')) {
-                    const match = input.match(/^(\+\d{1,4})(\d{6,15})$/);
-                    if (match) {
-                        countryCode = match[1];
-                        phone = match[2];
-                    }
-                }
-                fullPhoneNumber = countryCode + phone;
-                // Actually send the code
-                sendVerificationCodeWithNumber(fullPhoneNumber);
-            } else {
-                showError('Please enter a valid Gmail address or phone number with country code.');
-            }
-        }
-
-        function showOtpSection(phone) {
-            const otpSection = document.getElementById('otpSection');
-            const otpMessage = document.getElementById('otpMessage');
-            otpSection.style.display = 'block';
-            otpMessage.innerHTML = `Please enter the OTP sent to <b>${phone}</b>. <a href="#" onclick="changePhoneInput(event)">Change</a>`;
-            document.getElementById('verificationCode').value = '';
-            startOtpTimer();
-        }
-
-        function changePhoneInput(e) {
-            e.preventDefault();
-            document.getElementById('otpSection').style.display = 'none';
-            document.getElementById('unifiedLoginForm').style.display = 'block';
-            document.getElementById('unifiedInput').focus();
-            stopOtpTimer();
-        }
-
-        function startOtpTimer() {
-            otpTimerSeconds = 15;
-            document.getElementById('otpTimer').textContent = `00:15`;
-            document.getElementById('resendOtpBtn').style.display = 'none';
-            if (otpTimerInterval) clearInterval(otpTimerInterval);
-            otpTimerInterval = setInterval(() => {
-                otpTimerSeconds--;
-                document.getElementById('otpTimer').textContent = `00:${otpTimerSeconds.toString().padStart(2,'0')}`;
-                if (otpTimerSeconds <= 0) {
-                    clearInterval(otpTimerInterval);
-                    document.getElementById('resendOtpBtn').style.display = 'inline-block';
-                    document.getElementById('otpTimer').textContent = '00:00';
-                }
-            }, 1000);
-        }
-
-        function stopOtpTimer() {
-            if (otpTimerInterval) clearInterval(otpTimerInterval);
-            document.getElementById('otpTimer').textContent = '';
-            document.getElementById('resendOtpBtn').style.display = 'none';
-        }
-
-        function resendOTP(e) {
-            e.preventDefault();
-            document.getElementById('resendOtpBtn').style.display = 'none';
-            startOtpTimer();
-            // Resend the code using the last phone input
-            let input = lastPhoneInput;
-            let countryCode = '+1';
-            let phone = input;
-            let fullPhoneNumber = '';
-            if (input.startsWith('+')) {
-                const match = input.match(/^(\+\d{1,4})(\d{6,15})$/);
-                if (match) {
-                    countryCode = match[1];
-                    phone = match[2];
-                }
-            }
-            fullPhoneNumber = countryCode + phone;
-            document.getElementById('countryCode').value = countryCode;
-            document.getElementById('phoneNumber').value = phone;
-            sendVerificationCodeWithNumber(fullPhoneNumber);
-        }
-
-        // Helper to always send correct number
-        function sendVerificationCodeWithNumber(fullPhoneNumber) {
-            const sendCodeBtn = document.getElementById('sendCodeBtn') || {disabled:false, textContent:''};
-            sendCodeBtn.disabled = true;
-            sendCodeBtn.textContent = 'Sending...';
-            // Check if Firebase is properly initialized
-            if (!window.firebaseInitialized) {
-                sendVerificationCodeServer(fullPhoneNumber, sendCodeBtn);
-                return;
-            }
-            if (typeof firebase !== 'undefined' && firebase.auth) {
-                try {
-                    window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container', {
-                        'size': 'invisible',
-                        'callback': function(response) {},
-                        'expired-callback': function() {}
-                    });
-                    const appVerifier = window.recaptchaVerifier;
-                    firebase.auth().signInWithPhoneNumber(fullPhoneNumber, appVerifier)
-                        .then(function (confirmationResult) {
-                            window.confirmationResult = confirmationResult;
-                            console.log("confirmationResult:", window.confirmationResult);
-                            showSuccess('Verification code sent to ' + fullPhoneNumber);
-                        })
-                        .catch(function (error) {
-                            showError('Error sending verification code: ' + error.message);
-                            sendCodeBtn.disabled = false;
-                            sendCodeBtn.textContent = 'Send Verification Code';
-                        });
-                } catch (error) {
-                    showError('Firebase configuration error. Using fallback method.');
-                    sendVerificationCodeServer(fullPhoneNumber, sendCodeBtn);
-                }
-            } else {
-                sendVerificationCodeServer(fullPhoneNumber, sendCodeBtn);
-            }
         }
     </script>
 </body>

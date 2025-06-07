@@ -42,6 +42,17 @@ print("=====================================")
 # In-memory storage for verification codes (use Redis or database in production)
 verification_codes = {}
 
+def get_user_locations():
+    """Get user locations based on authentication status"""
+    if 'user' in session:
+        user_id = session['user']['id']
+        if 'user_locations' not in session:
+            session['user_locations'] = {}
+        if user_id not in session['user_locations']:
+            session['user_locations'][user_id] = []
+        return session['user_locations'][user_id]
+    return []
+
 def require_auth(f):
     """Decorator to require authentication for routes"""
     def decorated_function(*args, **kwargs):
@@ -60,71 +71,55 @@ def auth_page():
     # Get error message from URL parameter (from OAuth callback)
     error_message = request.args.get('error')
     
-    # Safe configuration values (handle None values)
-    google_client_id = GOOGLE_CLIENT_ID if GOOGLE_CLIENT_ID else ""
-    firebase_api_key = FIREBASE_API_KEY if FIREBASE_API_KEY else ""
-    firebase_auth_domain = FIREBASE_AUTH_DOMAIN if FIREBASE_AUTH_DOMAIN else ""
-    firebase_project_id = FIREBASE_PROJECT_ID if FIREBASE_PROJECT_ID else ""
-    firebase_storage_bucket = FIREBASE_STORAGE_BUCKET if FIREBASE_STORAGE_BUCKET else ""
-    firebase_messaging_sender_id = FIREBASE_MESSAGING_SENDER_ID if FIREBASE_MESSAGING_SENDER_ID else ""
-    firebase_app_id = FIREBASE_APP_ID if FIREBASE_APP_ID else ""
-    firebase_measurement_id = FIREBASE_MEASUREMENT_ID if FIREBASE_MEASUREMENT_ID else ""
-    
     return render_template('auth.html', 
-                         google_client_id=google_client_id,
-                         firebase_api_key=firebase_api_key,
-                         firebase_auth_domain=firebase_auth_domain,
-                         firebase_project_id=firebase_project_id,
-                         firebase_storage_bucket=firebase_storage_bucket,
-                         firebase_messaging_sender_id=firebase_messaging_sender_id,
-                         firebase_app_id=firebase_app_id,
-                         firebase_measurement_id=firebase_measurement_id,
+                         google_client_id=GOOGLE_CLIENT_ID if GOOGLE_CLIENT_ID else "",
                          error=error_message)
 
 @app.route('/auth/google/callback')
 def google_callback():
     """Handle Google OAuth callback"""
     try:
+        # Get authorization code from request
         code = request.args.get('code')
-        error = request.args.get('error')
-        
-        if error:
-            print(f"Google OAuth error: {error}")
-            return redirect(url_for('auth_page', error=f'Google authentication failed: {error}'))
-        
         if not code:
-            return redirect(url_for('auth_page', error='Google authentication was cancelled'))
+            return redirect(url_for('auth_page', error='No authorization code received'))
         
-        # Check if Google authentication is configured
-        if not GOOGLE_CLIENT_ID:
-            return redirect(url_for('auth_page', error='Google authentication is not configured'))
-        
-        # Exchange authorization code for access token
-        token_url = 'https://oauth2.googleapis.com/token'
-        redirect_uri = request.url_root.rstrip('/') + '/auth/google/callback'
-        
-        token_data = {
+        # Exchange code for tokens
+        token_endpoint = 'https://oauth2.googleapis.com/token'
+        data = {
             'code': code,
             'client_id': GOOGLE_CLIENT_ID,
-            'client_secret': os.getenv('GOOGLE_CLIENT_SECRET', ''),  # Optional for some flows
-            'redirect_uri': redirect_uri,
+            'client_secret': os.getenv('GOOGLE_CLIENT_SECRET'),
+            'redirect_uri': request.base_url,
             'grant_type': 'authorization_code'
         }
         
-        print(f"Exchanging code for token with redirect_uri: {redirect_uri}")
-        
-        # Get access token
-        token_response = requests.post(token_url, data=token_data)
-        token_info = token_response.json()
-        
-        if 'access_token' not in token_info:
-            print(f"Token exchange failed: {token_info}")
+        response = requests.post(token_endpoint, data=data)
+        if not response.ok:
+            print(f"Token exchange failed: {response.text}")
             return redirect(url_for('auth_page', error='Failed to exchange authorization code'))
         
-        # Get user information
-        userinfo_url = f"https://www.googleapis.com/oauth2/v2/userinfo?access_token={token_info['access_token']}"
-        user_response = requests.get(userinfo_url)
-        user_info = user_response.json()
+        tokens = response.json()
+        id_token_jwt = tokens['id_token']
+        
+        # Verify the ID token
+        try:
+            idinfo = id_token.verify_oauth2_token(
+                id_token_jwt, google_requests.Request(), GOOGLE_CLIENT_ID)
+        except ValueError as e:
+            print(f"Token verification failed: {e}")
+            return redirect(url_for('auth_page', error='Invalid token'))
+        
+        # Get user info
+        userinfo_endpoint = 'https://www.googleapis.com/oauth2/v2/userinfo'
+        headers = {'Authorization': f'Bearer {tokens["access_token"]}'}
+        userinfo_response = requests.get(userinfo_endpoint, headers=headers)
+        
+        if not userinfo_response.ok:
+            print(f"Failed to get user info: {userinfo_response.text}")
+            return redirect(url_for('auth_page', error='Failed to get user information'))
+        
+        user_info = userinfo_response.json()
         
         if 'email' not in user_info:
             print(f"Failed to get user info: {user_info}")
@@ -200,69 +195,6 @@ def google_auth():
         traceback.print_exc()
         return jsonify({'success': False, 'error': 'Authentication failed. Please try again.'})
 
-@app.route('/auth/phone/send', methods=['POST'])
-def send_phone_verification():
-    """Send verification code for phone authentication"""
-    try:
-        data = request.get_json()
-        phone = data.get('phone')
-        
-        if not phone:
-            return jsonify({'success': False, 'error': 'Phone number required'})
-        
-        # Validate phone number format
-        phone_pattern = r'^\+[1-9]\d{1,14}$'
-        if not re.match(phone_pattern, phone):
-            return jsonify({'success': False, 'error': 'Please enter a valid phone number with country code (e.g., +1234567890)'})
-        
-        # Generate random 6-digit code
-        code = ''.join(random.choices(string.digits, k=6))
-        
-        # Store verification code with timestamp (expires in 5 minutes)
-        verification_codes[phone] = {
-            'code': code,
-            'timestamp': time.time(),
-            'attempts': 0
-        }
-        
-        # In production, send SMS using Twilio, AWS SNS, or Firebase
-        send_sms(phone, f"Your Weather App verification code is: {code}")
-        print(f"📱 Sent verification code to {phone}")
-        
-        return jsonify({
-            'success': True, 
-            'message': 'Verification code sent'
-        })
-        
-    except Exception as e:
-        print(f"Phone verification send error: {e}")
-        return jsonify({'success': False, 'error': 'Failed to send verification code. Please try again.'})
-
-@app.route('/auth/phone/verify', methods=['POST'])
-def verify_phone():
-    data = request.get_json()
-    uid = data.get('uid')
-    phone = data.get('phone')
-    code = data.get('code')
-
-    # If using Firebase (uid present), do not require code
-    if uid and phone:
-        session['user'] = {
-            'id': uid,
-            'phone': phone,
-            'auth_method': 'phone',
-            'name': phone,
-            'email': '',
-            'picture': ''
-        }
-        return jsonify({'success': True, 'redirect': url_for('index')})
-
-    # Fallback: demo/server mode (code required)
-    if phone and code:
-        return jsonify({'success': False, 'error': 'Server-side code verification not implemented'})
-
-    return jsonify({'success': False, 'error': 'Phone and code required'})
-
 @app.route('/logout')
 def logout():
     """Logout user"""
@@ -270,18 +202,11 @@ def logout():
     return redirect(url_for('auth_page'))
 
 @app.route('/', methods=['GET', 'POST'])
-@require_auth
 def index():
     try:
         weather_data = None
         error = None
-        
-        # Initialize user-specific locations
-        user_id = session['user']['id']
-        if 'user_locations' not in session:
-            session['user_locations'] = {}
-        if user_id not in session['user_locations']:
-            session['user_locations'][user_id] = []
+        locations = get_user_locations()
         
         if request.method == 'POST':
             city = request.form.get('city').strip().lower()
@@ -308,13 +233,14 @@ def index():
                             'localtime': data['location']['localtime']
                         }
                         
-                        if save_location == 'true':
+                        if save_location == 'true' and 'user' in session:
                             new_location = {
                                 'city': city,
                                 'name': display_name or data['location']['name'],
                                 'temp': data['current']['temp_c']
                             }
                             # Check if location already exists and update it, or add new one
+                            user_id = session['user']['id']
                             user_locations = session['user_locations'][user_id]
                             existing_location = None
                             for i, loc in enumerate(user_locations):
@@ -341,9 +267,10 @@ def index():
             'index.html',
             weather=weather_data,
             error=error,
-            locations=session['user_locations'].get(user_id, []),
+            locations=locations,
             current_hour=datetime.now().hour,
-            user=session['user']
+            user=session.get('user'),
+            is_authenticated='user' in session
         )
         if session.get('just_logged_in'):
             session.pop('just_logged_in')
@@ -354,8 +281,11 @@ def index():
         return str(e), 500
 
 @app.route('/delete_location', methods=['POST'])
-@require_auth
 def delete_location():
+    """Delete a saved location (requires authentication)"""
+    if 'user' not in session:
+        return jsonify({'success': False, 'error': 'Authentication required'})
+        
     try:
         data = request.get_json()
         if not data:
@@ -416,8 +346,11 @@ def delete_location():
         return jsonify({'success': False, 'error': f'Server error: {str(e)}'})
 
 @app.route('/edit_location', methods=['POST'])
-@require_auth
 def edit_location():
+    """Edit a saved location (requires authentication)"""
+    if 'user' not in session:
+        return jsonify({'success': False, 'error': 'Authentication required'})
+        
     try:
         data = request.get_json()
         city = data.get('city').strip().lower()
