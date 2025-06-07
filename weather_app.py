@@ -78,10 +78,13 @@ def google_callback():
         # Get the current domain for the redirect URI
         if request.headers.get('X-Forwarded-Proto') == 'https':
             # Running on Render.com or other cloud platform
-            redirect_uri = request.url_root.replace('http://', 'https://') + 'auth/google/callback'
+            base_url = request.url_root.replace('http://', 'https://')
         else:
             # Local development
-            redirect_uri = request.base_url
+            base_url = request.url_root.rstrip('/')
+        
+        # Construct the redirect URI
+        redirect_uri = f"{base_url}/auth/google/callback"
         
         print(f"Callback URL being used: {redirect_uri}")  # For debugging
         
