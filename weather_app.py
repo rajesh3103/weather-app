@@ -75,13 +75,23 @@ def google_callback():
         if not code:
             return redirect(url_for('auth_page', error='No authorization code received'))
         
+        # Get the current domain for the redirect URI
+        if request.headers.get('X-Forwarded-Proto') == 'https':
+            # Running on Render.com or other cloud platform
+            redirect_uri = request.url_root.replace('http://', 'https://') + 'auth/google/callback'
+        else:
+            # Local development
+            redirect_uri = request.base_url
+        
+        print(f"Callback URL being used: {redirect_uri}")  # For debugging
+        
         # Exchange code for tokens
         token_endpoint = 'https://oauth2.googleapis.com/token'
         data = {
             'code': code,
             'client_id': GOOGLE_CLIENT_ID,
             'client_secret': os.getenv('GOOGLE_CLIENT_SECRET'),
-            'redirect_uri': request.base_url,
+            'redirect_uri': redirect_uri,
             'grant_type': 'authorization_code'
         }
         

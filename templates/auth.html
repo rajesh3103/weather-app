@@ -230,8 +230,12 @@
                 showError('Google authentication is not configured');
                 return;
             }
+            
+            // Get the current domain
+            const currentDomain = window.location.origin;
+            
             // Simple direct redirect to Google OAuth
-            const redirectUri = window.location.origin + '/auth/google/callback';
+            const redirectUri = `${currentDomain}/auth/google/callback`;
             const scope = 'email profile';
             const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?` +
                 `client_id=${encodeURIComponent(clientId)}&` +
@@ -240,6 +244,8 @@
                 `response_type=code&` +
                 `access_type=offline&` +
                 `prompt=select_account`;
+            
+            console.log('Redirect URI:', redirectUri); // For debugging
             setTimeout(() => {
                 window.location.href = authUrl;
             }, 500);
