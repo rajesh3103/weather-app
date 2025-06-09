@@ -84,7 +84,7 @@ def google_callback():
             base_url = request.url_root.rstrip('/')
         
         # Construct the redirect URI
-        redirect_uri = f"{base_url}/auth/google/callback"
+        redirect_uri = f"{base_url.rstrip('/')}/auth/google/callback"
         
         print(f"Callback URL being used: {redirect_uri}")  # For debugging
         
