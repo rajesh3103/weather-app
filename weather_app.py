@@ -15,23 +15,12 @@ load_dotenv()
 API_KEY = os.getenv('WEATHER_API_KEY')
 # Authentication configuration
 GOOGLE_CLIENT_ID = os.getenv('GOOGLE_CLIENT_ID')
-FIREBASE_API_KEY = os.getenv('FIREBASE_API_KEY')
-FIREBASE_AUTH_DOMAIN = os.getenv('FIREBASE_AUTH_DOMAIN')
-FIREBASE_PROJECT_ID = os.getenv('FIREBASE_PROJECT_ID')
-FIREBASE_STORAGE_BUCKET = os.getenv('FIREBASE_STORAGE_BUCKET')
-FIREBASE_MESSAGING_SENDER_ID = os.getenv('FIREBASE_MESSAGING_SENDER_ID')
-FIREBASE_APP_ID = os.getenv('FIREBASE_APP_ID')
-FIREBASE_MEASUREMENT_ID = os.getenv('FIREBASE_MEASUREMENT_ID')
 
 # Print configuration status
 print("=== Authentication Configuration ===")
 print(f"Weather API Key: {'✓ Configured' if API_KEY else '✗ Missing'}")
 print(f"Google Client ID: {'✓ Configured' if GOOGLE_CLIENT_ID else '✗ Missing (Google sign-in disabled)'}")
-print(f"Firebase Config: {'✓ Configured' if FIREBASE_API_KEY else '✗ Missing (Phone auth disabled)'}")
 print("=====================================")
-
-# In-memory storage for verification codes (use Redis or database in production)
-verification_codes = {}
 
 def get_user_locations():
     """Get user locations based on authentication status"""
