@@ -58,31 +58,126 @@
         }
 
         .weather-form {
-            margin: 20px 0;
             display: flex;
-            gap: 10px;
+            align-items: center;
+            gap: 8px;
+            margin: 20px 0;
         }
 
-        input[type="text"] {
-            padding: 10px;
-            border: 1px solid var(--border-color);
-            border-radius: 5px;
-            flex-grow: 1;
-            background: var(--container-bg);
-            color: var(--text-color);
+        .search-bar-container {
+            position: relative;
+            display: flex;
+            align-items: center;
+            width: 100%;
+            max-width: 900px;
+            margin: 0 auto;
+            border-radius: 999px;
+            background: #222;
+            z-index: 1;
+            overflow: visible;
         }
 
-        button {
-            padding: 10px 20px;
-            background: #0066ff;
-            color: white;
+        .search-bar-container::before {
+            content: "";
+            position: absolute;
+            top: -4px; left: -4px; right: -4px; bottom: -4px; /* Border thickness */
+            border-radius: 999px;
+            z-index: 0;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s;
+            background: conic-gradient(
+                #a5b4fc,
+                #6ee7b7,
+                #f472b6,
+                #facc15,
+                #38bdf8,
+                #a5b4fc
+            );
+            animation: aurora-spin 3s linear infinite;
+        }
+        .search-bar-container.focused::before {
+            opacity: 1;
+        }
+        .search-bar-container:not(.focused)::before {
+            opacity: 1;
+            background: #444;
+            animation: none;
+        }
+
+        .search-input {
+            position: relative;
+            z-index: 1;
+            width: 100%;
             border: none;
-            border-radius: 5px;
-            cursor: pointer;
+            outline: none;
+            background: #222; /* Opaque background to cover the center */
+            color: #fff;
+            font-size: 1.1rem;
+            border-radius: 999px;
+            padding: 0.7em 3.5em 0.7em 1.5em;
         }
 
-        button:hover {
-            background: #0052cc;
+        .search-clear-btn {
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 1.5em;
+            cursor: pointer;
+            outline: none;
+            position: absolute;
+            right: 0.9em;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 2;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+            height: 100%;
+        }
+
+        .search-icon-btn {
+            background: none;
+            border: none;
+            color: #fff;
+            border-radius: 0 32px 32px 0;
+            padding: 0 1.1em;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            height: 100%;
+            font-size: 1.3em;
+            outline: none;
+            position: relative;
+            z-index: 1;
+            margin-left: -8px;
+        }
+
+        .mic-btn {
+            background: #222;
+            border: none;
+            border-radius: 50%;
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-left: 4px;
+            color: #fff;
+            font-size: 1.3em;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .mic-btn:hover {
+            background: #e53935;
+        }
+
+        @media (max-width: 600px) {
+            .weather-form { flex-direction: column; gap: 10px; }
+            .search-bar-container { width: 100%; }
+            .mic-btn { margin-left: 0; }
         }
 
         .weather-details {
@@ -569,6 +664,241 @@
             transform: translateY(-2px);
             box-shadow: 0 4px 15px rgba(0,0,0,0.2);
         }
+
+        .mic-outer {
+            position: relative;
+            width: 90px;
+            height: 90px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .mic-inner {
+            position: absolute;
+            left: 15px;
+            top: 15px;
+            width: 60px;
+            height: 60px;
+            z-index: 2;
+        }
+        .mic-wave {
+            position: absolute;
+            left: 0; top: 0;
+            width: 90px; height: 90px;
+            border-radius: 50%;
+            background: rgba(229,57,53,0.15);
+            z-index: 1;
+            animation: micPulse 1.2s infinite;
+        }
+        @keyframes micPulse {
+            0% { transform: scale(1); opacity: 0.7; }
+            50% { transform: scale(1.18); opacity: 1; }
+            100% { transform: scale(1); opacity: 0.7; }
+        }
+
+        /* Current Location Card Style */
+        .current-location-card {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            background: linear-gradient(90deg, #7f7fd5 0%, #91eac9 100%);
+            border-radius: 12px;
+            box-shadow: 0 1px 6px 0 rgba(127,127,213,0.10);
+            padding: 7px 12px;
+            margin-bottom: 8px;
+            color: #fff;
+            font-weight: 500;
+            font-size: 0.98em;
+            transition: box-shadow 0.2s, background 0.2s;
+            cursor: pointer;
+        }
+        .current-location-card .location-pin {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 20px;
+            height: 20px;
+            background: rgba(255,255,255,0.13);
+            border-radius: 50%;
+            margin-right: 4px;
+        }
+        .current-location-card .location-pin svg {
+            width: 13px;
+            height: 13px;
+            display: block;
+        }
+        .current-location-card:hover {
+            box-shadow: 0 2px 10px 0 rgba(127,127,213,0.18);
+            background: linear-gradient(90deg, #86a8e7 0%, #7f7fd5 100%);
+        }
+
+        /* Voice Search Overlay - Modern Modal Style */
+        #voiceOverlay {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(20,20,20,0.65);
+            z-index: 2000;
+            align-items: flex-start;
+            justify-content: center;
+            flex-direction: column;
+        }
+        #voiceOverlayContent {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background: #232323;
+            border-radius: 18px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+            padding: 48px 40px 36px 40px;
+            margin: 80px auto 0 auto;
+            max-width: 380px;
+            width: 90vw;
+            min-width: 260px;
+            position: relative;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        #voiceStatus {
+            color: #fff;
+            font-size: 1.6rem;
+            margin-bottom: 30px;
+            text-align: center;
+        }
+        #micWave {
+            width: 90px; height: 90px;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .mic-outer {
+            position: relative;
+            width: 90px;
+            height: 90px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .mic-inner {
+            position: absolute;
+            left: 15px;
+            top: 15px;
+            width: 60px;
+            height: 60px;
+            z-index: 2;
+        }
+        .mic-inner svg {
+            transform: rotate(0deg); /* Ensure upright */
+        }
+        .mic-wave {
+            position: absolute;
+            left: 0; top: 0;
+            width: 90px; height: 90px;
+            border-radius: 50%;
+            background: rgba(229,57,53,0.15);
+            z-index: 1;
+            animation: micPulse 1.2s infinite;
+        }
+        .mic-wave {
+            position: absolute;
+            left: 0; top: 0;
+            width: 90px; height: 90px;
+            border-radius: 50%;
+            background: rgba(229,57,53,0.15);
+            z-index: 1;
+            animation: micPulse 1.2s infinite;
+        }
+        #voiceRetryBtn {
+            display: none;
+            margin-top: 30px;
+            padding: 10px 24px;
+            font-size: 1rem;
+            border: none;
+            border-radius: 24px;
+            background: #fff;
+            color: #222;
+            cursor: pointer;
+        }
+        #voiceCloseBtn {
+            position: absolute;
+            top: 18px;
+            right: 24px;
+            background: none;
+            border: none;
+            color: #fff;
+            font-size: 2rem;
+            cursor: pointer;
+        }
+
+        /* Responsive for modal */
+        @media (max-width: 500px) {
+            #voiceOverlayContent {
+                padding: 28px 8vw 24px 8vw;
+                min-width: 0;
+            }
+        }
+
+        /* Fix for overlay alignment */
+        #voiceOverlay {
+            display: none;
+            align-items: flex-start;
+            justify-content: center;
+            flex-direction: column;
+        }
+        #voiceOverlay.show {
+            display: flex !important;
+        }
+
+        /* Voice overlay YouTube-style for 'Didn't hear that' */
+        #voiceOverlayContent.mic-retry {
+            background: #232323;
+            border-radius: 18px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+            padding: 48px 40px 36px 40px;
+            margin: 80px auto 0 auto;
+            max-width: 380px;
+            width: 90vw;
+            min-width: 260px;
+            position: relative;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        .mic-retry .mic-outer {
+            margin: 32px 0 12px 0;
+        }
+        .mic-retry .mic-inner svg {
+            background: none;
+        }
+        .mic-retry .mic-wave { display: none; }
+        .mic-retry .mic-inner svg {
+            width: 60px; height: 60px;
+        }
+        .mic-retry .mic-inner {
+            left: 0; top: 0; width: 60px; height: 60px; position: static;
+        }
+        .mic-retry-hint {
+            color: #bbb;
+            font-size: 1.1rem;
+            margin-top: 10px;
+            text-align: center;
+        }
+        .mic-retry-mic-btn {
+            background: #444;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            border: none;
+            margin: 0 auto;
+            transition: background 0.2s;
+        }
+        .mic-retry-mic-btn:hover {
+            background: #666;
+        }
     </style>
 </head>
 <body>
@@ -620,10 +950,11 @@
             </div>
             {% endif %}
             <ul class="location-list">
-                <li class="location-item" onclick="getLocation()">
-                    <div class="location-info">
-                        <div class="location-name">📍 Current Location</div>
-                    </div>
+                <li class="current-location-card" onclick="getLocation()">
+                    <span class="location-pin">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21c-4.418 0-8-5.373-8-10a8 8 0 1 1 16 0c0 4.627-3.582 10-8 10z"/><circle cx="12" cy="11" r="3"/></svg>
+                    </span>
+                    Current Location
                 </li>
                 {% if is_authenticated %}
                     {% for location in locations %}
@@ -664,10 +995,39 @@
                 {% endif %}
             </div>
             <h1>☁️ Weather App</h1>
-            <form class="weather-form" method="POST" id="weatherForm">
-                <input type="text" name="city" placeholder="Enter city name" required>
-                <button type="submit">Get Weather</button>
+            <form class="weather-form" method="POST" id="weatherForm" autocomplete="off" style="gap: 0;">
+                <div class="search-bar-container">
+                    <input type="text" name="city" id="cityInput" class="search-input" placeholder="Enter city name" required autocomplete="off">
+                    <button type="button" id="clearBtn" class="search-clear-btn" style="display:none;" tabindex="-1">&times;</button>
+                </div>
+                <button type="submit" id="searchBtn" class="search-icon-btn" title="Search"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></button>
+                <button type="button" id="micBtn" class="mic-btn" title="Speak city name"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10v2a7 7 0 0 0 14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="8" y1="22" x2="16" y2="22"/></svg></button>
             </form>
+
+            <!-- Voice Search Overlay -->
+            <div id="voiceOverlay" class="">
+                <div id="voiceOverlayContent">
+                    <div id="voiceStatus">Say a city name to get the weather!</div>
+                    <div id="micWave">
+                        <div class="mic-outer">
+                            <div class="mic-inner">
+                                <svg width="60" height="60" viewBox="0 0 60 60">
+                                    <circle cx="30" cy="30" r="28" fill="#222"/>
+                                    <circle cx="30" cy="30" r="20" fill="#e53935"/>
+                                    <!-- Upright mic icon -->
+                                    <rect x="27" y="18" width="6" height="18" rx="3" fill="#fff"/>
+                                    <rect x="27" y="36" width="6" height="8" rx="3" fill="#fff" opacity="0.7"/>
+                                    <path d="M30 44 v4" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>
+                                    <circle cx="30" cy="50" r="2.5" fill="#fff"/>
+                                </svg>
+                            </div>
+                            <div class="mic-wave"></div>
+                        </div>
+                    </div>
+                    <button id="voiceRetryBtn">Try Again</button>
+                    <button id="voiceCloseBtn">&times;</button>
+                </div>
+            </div>
 
             {% if weather %}
             <div class="weather-details">
@@ -702,331 +1062,375 @@
     </div>
 
     <script>
-        // Load saved theme on page load
-        document.addEventListener('DOMContentLoaded', function() {
-            var savedTheme = localStorage.getItem('theme') || 'light';
-            document.documentElement.setAttribute('data-theme', savedTheme);
-            document.getElementById('themeToggle').textContent = savedTheme === 'light' ? '🌞' : '🌜';
-        });
-
-        function toggleTheme() {
-            var html = document.documentElement;
-            var themeToggle = document.getElementById('themeToggle');
-            var newTheme = html.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
-            
-            html.setAttribute('data-theme', newTheme);
-            themeToggle.textContent = newTheme === 'light' ? '🌞' : '🌜';
-            localStorage.setItem('theme', newTheme);
-        }
-
-        function showAddLocationModal(prefilledCity = '') {
-            var modal = document.createElement('div');
-            modal.className = 'modal';
-            modal.innerHTML = `
-                <div class="modal-content">
-                    <h3>Add New Location</h3>
-                    <form id="locationForm" onsubmit="addLocation(event)">
-                        <input type="text" id="newLocationCity" placeholder="Enter city name" required value="${prefilledCity}">
-                        <input type="text" id="newLocationName" placeholder="Enter display name (optional)" value="${prefilledCity}">
-                        <div class="modal-buttons">
-                            <button type="submit">Add</button>
-                            <button type="button" onclick="this.closest('.modal').remove()">Cancel</button>
-                        </div>
-                    </form>
-                </div>
-            `;
-            document.body.appendChild(modal);
-
-            setTimeout(() => {
-                if (prefilledCity) {
-                    document.getElementById('newLocationName').focus();
-                    document.getElementById('newLocationName').select();
-                } else {
-                    document.getElementById('newLocationCity').focus();
-                }
-            }, 100);
-        }
-
-        function showEditLocationModal(city, name) {
-            var modal = document.createElement('div');
-            modal.className = 'modal';
-            modal.innerHTML = `
-                <div class="modal-content">
-                    <h3>Edit Location Name</h3>
-                    <form id="editLocationForm" onsubmit="editLocation(event, '${city}', '${name}')">
-                        <input type="text" id="editLocationName" value="${name}" required>
-                        <div class="modal-buttons">
-                            <button type="submit">Save</button>
-                            <button type="button" onclick="this.closest('.modal').remove()">Cancel</button>
-                        </div>
-                    </form>
-                </div>
-            `;
-            document.body.appendChild(modal);
-            setTimeout(() => {
-                document.getElementById('editLocationName').focus();
-            }, 100);
-        }
-
-        function editLocation(event, city, oldName) {
-            event.preventDefault();
-            var newName = document.getElementById('editLocationName').value;
-            fetch('/edit_location', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ city: city, old_name: oldName, new_name: newName })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    window.location.reload();
-                } else {
-                    alert("Failed to edit location.");
-                }
-            });
-        }
-
-        function addLocation(event) {
-            event.preventDefault();
-            var city = document.getElementById('newLocationCity').value;
-            var displayName = document.getElementById('newLocationName').value;
-            
-            if (!city) {
-                alert('Please enter a city name');
-                return;
-            }
-
-            // If no display name provided, use city name
-            var originalDisplayName = displayName || city;
-            
-            // Make sure the display name is unique
-            var finalDisplayName = getUniqueDisplayName(originalDisplayName);
-
-            // Show notification if name was changed
-            if (finalDisplayName !== originalDisplayName) {
-                showNotification(`Location name changed to "${finalDisplayName}" to avoid duplicates.`, 'info');
-            }
-
-            var form = document.createElement('form');
-            form.method = 'POST';
-            form.action = '/';
-
-            var cityInput = document.createElement('input');
-            cityInput.type = 'hidden';
-            cityInput.name = 'city';
-            cityInput.value = city;
-
-            var nameInput = document.createElement('input');
-            nameInput.type = 'hidden';
-            nameInput.name = 'display_name';
-            nameInput.value = finalDisplayName;
-
-            var saveInput = document.createElement('input');
-            saveInput.type = 'hidden';
-            saveInput.name = 'save_location';
-            saveInput.value = 'true';
-
-            form.appendChild(cityInput);
-            form.appendChild(nameInput);
-            form.appendChild(saveInput);
-            document.body.appendChild(form);
-            
-            // Small delay to show the notification before page reload
-            setTimeout(() => {
-                form.submit();
-            }, finalDisplayName !== originalDisplayName ? 1500 : 0);
-        }
-
-        function showNotification(message, type = 'info') {
-            var notification = document.createElement('div');
-            notification.style.cssText = `
-                position: fixed;
-                top: 20px;
-                right: 20px;
-                background: ${type === 'info' ? '#17a2b8' : '#28a745'};
-                color: white;
-                padding: 12px 20px;
-                border-radius: 8px;
-                box-shadow: 0 4px 12px rgba(0,0,0,0.3);
-                z-index: 10000;
-                font-size: 14px;
-                max-width: 300px;
-                animation: slideIn 0.3s ease;
-            `;
-            notification.textContent = message;
-            document.body.appendChild(notification);
-
-            // Auto remove after 3 seconds
-            setTimeout(() => {
-                notification.style.animation = 'slideOut 0.3s ease';
-                setTimeout(() => {
-                    if (notification.parentNode) {
-                        notification.parentNode.removeChild(notification);
-                    }
-                }, 300);
-            }, 3000);
-        }
-
-        function getLocation() {
-            if (navigator.geolocation) {
-                navigator.geolocation.getCurrentPosition(
-                    function(position) {
-                        var input = document.querySelector('input[name="city"]');
-                        input.value = position.coords.latitude + "," + position.coords.longitude;
-                        document.getElementById('weatherForm').submit();
-                    },
-                    function(error) {
-                        alert("Unable to get location. Please enter city manually.");
-                    }
-                );
+    // --- GLOBAL FUNCTIONS (for inline onclick) ---
+    function toggleTheme() {
+        var html = document.documentElement;
+        var themeToggle = document.getElementById('themeToggle');
+        var newTheme = html.getAttribute('data-theme') === 'light' ? 'dark' : 'light';
+        html.setAttribute('data-theme', newTheme);
+        themeToggle.textContent = newTheme === 'light' ? '🌞' : '🌜';
+        localStorage.setItem('theme', newTheme);
+    }
+    function showAddLocationModal(prefilledCity = '') {
+        var modal = document.createElement('div');
+        modal.className = 'modal';
+        modal.innerHTML = `
+            <div class="modal-content">
+                <h3>Add New Location</h3>
+                <form id="locationForm" onsubmit="addLocation(event)">
+                    <input type="text" id="newLocationCity" placeholder="Enter city name" required value="${prefilledCity}">
+                    <input type="text" id="newLocationName" placeholder="Enter display name (optional)" value="${prefilledCity}">
+                    <div class="modal-buttons">
+                        <button type="submit">Add</button>
+                        <button type="button" onclick="this.closest('.modal').remove()">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        `;
+        document.body.appendChild(modal);
+        setTimeout(() => {
+            if (prefilledCity) {
+                document.getElementById('newLocationName').focus();
+                document.getElementById('newLocationName').select();
             } else {
-                alert("Geolocation is not supported by this browser.");
+                document.getElementById('newLocationCity').focus();
             }
+        }, 100);
+    }
+    function addLocation(event) {
+        event.preventDefault();
+        var city = document.getElementById('newLocationCity').value;
+        var displayName = document.getElementById('newLocationName').value;
+        if (!city) {
+            alert('Please enter a city name');
+            return;
         }
-
-        function getWeather(city) {
-            var input = document.querySelector('input[name="city"]');
-            input.value = city;
-            document.getElementById('weatherForm').submit();
-        }
-
-        function confirmDeleteLocation(event, city, name) {
-            event.stopPropagation();
-            if (confirm("Do you really want to remove this place from your list?")) {
-                // Add visual feedback
-                const deleteBtn = event.target;
-                const originalText = deleteBtn.innerHTML;
-                deleteBtn.innerHTML = '⏳';
-                deleteBtn.disabled = true;
-                
-                // Call delete function with error handling
-                deleteLocationWithFeedback(event, city, name, deleteBtn, originalText);
-            }
-        }
-
-        function deleteLocationWithFeedback(event, city, name, deleteBtn, originalText) {
-            console.log(`Attempting to delete location: city='${city}', name='${name}'`);
-            
-            fetch('/delete_location', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
+        var originalDisplayName = displayName || city;
+        var finalDisplayName = originalDisplayName;
+        var form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '/';
+        var cityInput = document.createElement('input');
+        cityInput.type = 'hidden';
+        cityInput.name = 'city';
+        cityInput.value = city;
+        var nameInput = document.createElement('input');
+        nameInput.type = 'hidden';
+        nameInput.name = 'display_name';
+        nameInput.value = finalDisplayName;
+        var saveInput = document.createElement('input');
+        saveInput.type = 'hidden';
+        saveInput.name = 'save_location';
+        saveInput.value = 'true';
+        form.appendChild(cityInput);
+        form.appendChild(nameInput);
+        form.appendChild(saveInput);
+        document.body.appendChild(form);
+        setTimeout(() => {
+            form.submit();
+        }, 0);
+        // Remove modal
+        var modal = document.getElementById('locationForm');
+        if (modal) modal.closest('.modal').remove();
+    }
+    function getLocation() {
+        if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition(
+                function(position) {
+                    var input = document.querySelector('input[name="city"]');
+                    input.value = position.coords.latitude + "," + position.coords.longitude;
+                    document.getElementById('weatherForm').submit();
                 },
-                body: JSON.stringify({ city: city, name: name })
-            })
-            .then(response => {
-                console.log('Delete response status:', response.status);
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
+                function(error) {
+                    alert("Unable to get location. Please enter city manually.");
                 }
-                return response.json();
-            })
-            .then(data => {
-                console.log('Delete response data:', data);
-                if (data.success) {
-                    console.log('Delete successful, reloading page...');
-                    // Show success feedback briefly before reload
-                    deleteBtn.innerHTML = '✓';
-                    setTimeout(() => {
-                        window.location.href = window.location.href;
-                    }, 500);
-                } else {
-                    console.error('Delete failed:', data.error);
-                    alert(`Failed to delete location: ${data.error || 'Unknown error'}`);
-                    // Restore button
-                    deleteBtn.innerHTML = originalText;
-                    deleteBtn.disabled = false;
-                }
-            })
-            .catch(error => {
-                console.error('Delete request failed:', error);
-                alert(`Error deleting location: ${error.message}`);
-                // Restore button
+            );
+        } else {
+            alert("Geolocation is not supported by this browser.");
+        }
+    }
+    function addCurrentLocationToPlaces(cityName) {
+        showAddLocationModal(cityName);
+    }
+    function logout() {
+        if (confirm('Are you sure you want to log out?')) {
+            window.location.href = '/logout';
+        }
+    }
+    function showEditLocationModal(city, name) {
+        var modal = document.createElement('div');
+        modal.className = 'modal';
+        modal.innerHTML = `
+            <div class="modal-content">
+                <h3>Edit Location Name</h3>
+                <form id="editLocationForm" onsubmit="editLocation(event, '${city}', '${name}')">
+                    <input type="text" id="editLocationName" value="${name}" required>
+                    <div class="modal-buttons">
+                        <button type="submit">Save</button>
+                        <button type="button" onclick="this.closest('.modal').remove()">Cancel</button>
+                    </div>
+                </form>
+            </div>
+        `;
+        document.body.appendChild(modal);
+        setTimeout(() => {
+            document.getElementById('editLocationName').focus();
+        }, 100);
+    }
+    function editLocation(event, city, oldName) {
+        event.preventDefault();
+        var newName = document.getElementById('editLocationName').value;
+        fetch('/edit_location', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ city: city, old_name: oldName, new_name: newName })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                window.location.reload();
+            } else {
+                alert("Failed to edit location.");
+            }
+        });
+    }
+    function confirmDeleteLocation(event, city, name) {
+        event.stopPropagation();
+        if (confirm("Do you really want to remove this place from your list?")) {
+            const deleteBtn = event.target;
+            const originalText = deleteBtn.innerHTML;
+            deleteBtn.innerHTML = '⏳';
+            deleteBtn.disabled = true;
+            deleteLocationWithFeedback(event, city, name, deleteBtn, originalText);
+        }
+    }
+    function deleteLocationWithFeedback(event, city, name, deleteBtn, originalText) {
+        fetch('/delete_location', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ city: city, name: name })
+        })
+        .then(response => {
+            if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                deleteBtn.innerHTML = '✓';
+                setTimeout(() => { window.location.href = window.location.href; }, 500);
+            } else {
+                alert(`Failed to delete location: ${data.error || 'Unknown error'}`);
                 deleteBtn.innerHTML = originalText;
                 deleteBtn.disabled = false;
+            }
+        })
+        .catch(error => {
+            alert(`Error deleting location: ${error.message}`);
+            deleteBtn.innerHTML = originalText;
+            deleteBtn.disabled = false;
+        });
+    }
+    function deleteLocation(event, city, name) {
+        deleteLocationWithFeedback(event, city, name, event.target, '&times;');
+    }
+    function getWeather(city) {
+        var input = document.querySelector('input[name="city"]');
+        input.value = city;
+        document.getElementById('weatherForm').submit();
+    }
+    // --- END GLOBAL FUNCTIONS ---
+
+    document.addEventListener('DOMContentLoaded', function() {
+        // Load saved theme on page load
+        var savedTheme = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        document.getElementById('themeToggle').textContent = savedTheme === 'light' ? '🌞' : '🌜';
+
+        // Attach event listeners for profile/user menu
+        var userAvatar = document.getElementById('userAvatar');
+        var userDropdown = document.getElementById('userDropdown');
+        var userMenu = document.getElementById('userMenu');
+        let isDropdownOpen = false;
+        if (userAvatar && userDropdown) {
+            userAvatar.addEventListener('click', function(e) {
+                e.stopPropagation();
+                isDropdownOpen = !isDropdownOpen;
+                userDropdown.classList.toggle('show');
             });
-        }
-
-        function deleteLocation(event, city, name) {
-            // This function is kept for backward compatibility
-            // but now we use deleteLocationWithFeedback for better UX
-            deleteLocationWithFeedback(event, city, name, event.target, '&times;');
-        }
-
-        function addCurrentLocationToPlaces(cityName) {
-            // Show the modal with pre-filled city name
-            showAddLocationModal(cityName);
-        }
-
-        function getUniqueDisplayName(proposedName) {
-            // Get all existing location names from the sidebar
-            var existingNames = [];
-            var locationItems = document.querySelectorAll('.location-name');
-            locationItems.forEach(function(item) {
-                var name = item.textContent.trim();
-                if (name !== '📍 Current Location') {
-                    existingNames.push(name.toLowerCase());
+            document.addEventListener('click', function(e) {
+                if (isDropdownOpen && !userDropdown.contains(e.target) && !userAvatar.contains(e.target)) {
+                    userDropdown.classList.remove('show');
+                    isDropdownOpen = false;
                 }
             });
-            
-            var baseName = proposedName.trim();
-            var uniqueName = baseName;
-            var counter = 2;
-            
-            // Keep checking until we find a unique name
-            while (existingNames.includes(uniqueName.toLowerCase())) {
-                uniqueName = baseName + '_' + counter;
-                counter++;
+            userDropdown.addEventListener('click', function(e) {
+                e.stopPropagation();
+            });
+        }
+
+        // Enhanced search bar logic
+        (function() {
+            const cityInput = document.getElementById('cityInput');
+            const clearBtn = document.getElementById('clearBtn');
+            const form = document.getElementById('weatherForm');
+            cityInput.addEventListener('input', function() {
+                clearBtn.style.display = cityInput.value ? 'flex' : 'none';
+            });
+            clearBtn.addEventListener('click', function(e) {
+                cityInput.value = '';
+                clearBtn.style.display = 'none';
+                cityInput.focus();
+            });
+            document.getElementById('searchBtn').addEventListener('click', function(e) {
+                form.submit();
+            });
+        })();
+
+        // Focus/blur for aurora border
+        const container = document.querySelector('.search-bar-container');
+        const input = document.querySelector('.search-input');
+        input.addEventListener('focus', () => container.classList.add('focused'));
+        input.addEventListener('blur', () => container.classList.remove('focused'));
+
+        // Voice Search Overlay Logic (YouTube style, persistent timer)
+        (function() {
+            const micBtn = document.getElementById('micBtn');
+            const overlay = document.getElementById('voiceOverlay');
+            let status = document.getElementById('voiceStatus');
+            let closeBtn = document.getElementById('voiceCloseBtn');
+            const cityInput = document.getElementById('cityInput');
+            const form = document.getElementById('weatherForm');
+            let recognition = null;
+            let silenceTimeout = null;
+            let micRetryBtn = null;
+            let timerStart = null;
+            let timerElapsed = 0;
+            let timerActive = false;
+            function showMicRetry() {
+                const overlayContent = document.getElementById('voiceOverlayContent');
+                overlayContent.classList.add('mic-retry');
+                overlayContent.innerHTML = `
+                    <div id="voiceStatus" style="color:#fff; font-size:2rem; margin-bottom:30px; text-align:center;">Didn't hear that. Try again.</div>
+                    <button class="mic-retry-mic-btn" id="micRetryBtn" aria-label="Retry">
+                        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10v2a7 7 0 0 0 14 0v-2"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="8" y1="22" x2="16" y2="22"/></svg>
+                    </button>
+                    <div class="mic-retry-hint">Tap microphone to try again.</div>
+                    <button id="voiceCloseBtn" style="position:absolute;top:18px;right:24px;background:none;border:none;color:#fff;font-size:2rem;cursor:pointer;">&times;</button>
+                `;
+                micRetryBtn = document.getElementById('micRetryBtn');
+                micRetryBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    // Reset timer/state only on retry
+                    timerStart = Date.now();
+                    timerElapsed = 0;
+                    timerActive = false;
+                    overlay.classList.remove('show');
+                    setTimeout(() => startVoiceRecognition(), 100);
+                });
+                document.getElementById('voiceCloseBtn').addEventListener('click', function(e) {
+                    overlay.classList.remove('show');
+                    document.body.style.overflow = '';
+                });
             }
-            
-            return uniqueName;
-        }
-
-        // Enhanced animated background setter
-        function setWeatherBackground() {
-            var weatherBg = document.getElementById("weatherBackground");
-            if (!weatherBg) return;
-            var weatherType = weatherBg.getAttribute("data-weather-type");
-            
-            // Add loading state
-            weatherBg.classList.add("loading");
-            
-            // Create a new image to preload the GIF
-            var img = new Image();
-            img.onload = function() {
-                // Set the background with smooth transition
-                setTimeout(() => {
-                    //weatherBg.style.backgroundImage = `url('/static/media/${weatherType}.gif')`;
-                    weatherBg.classList.remove("loading");
-                    weatherBg.classList.add("fade-in");
-                    
-                    // Remove fade-in class after animation
-                    setTimeout(() => {
-                        weatherBg.classList.remove("fade-in");
-                    }, 2000);
-                }, 300);
-            };
-            
-            // Fallback to JPG if GIF doesn't exist
-            img.onerror = function() {
-                weatherBg.style.backgroundImage = `url('/static/media/${weatherType}.jpg')`;
-                weatherBg.classList.remove("loading");
-                console.log(`GIF not found for ${weatherType}, using JPG fallback`);
-            };
-            
-            // Start loading the GIF
-           // img.src = `/static/media/${weatherType}.gif`;
-        }
-
-        // Initialize background on page load
-        document.addEventListener('DOMContentLoaded', function() {
-            setWeatherBackground();
-        });
-
-        // Also set background immediately for faster loading
-        setWeatherBackground();
+            function startVoiceRecognition() {
+                // Restore original overlay content
+                const overlayContent = document.getElementById('voiceOverlayContent');
+                overlayContent.classList.remove('mic-retry');
+                overlayContent.innerHTML = `
+                    <div id="voiceStatus">Say a city name to get the weather!</div>
+                    <div id="micWave">
+                        <div class="mic-outer">
+                            <div class="mic-inner">
+                                <svg width="60" height="60" viewBox="0 0 60 60">
+                                    <circle cx="30" cy="30" r="28" fill="#222"/>
+                                    <circle cx="30" cy="30" r="20" fill="#e53935"/>
+                                    <rect x="27" y="18" width="6" height="18" rx="3" fill="#fff"/>
+                                    <rect x="27" y="36" width="6" height="8" rx="3" fill="#fff" opacity="0.7"/>
+                                    <path d="M30 44 v4" stroke="#fff" stroke-width="2.5" stroke-linecap="round"/>
+                                    <circle cx="30" cy="50" r="2.5" fill="#fff"/>
+                                </svg>
+                            </div>
+                            <div class="mic-wave"></div>
+                        </div>
+                    </div>
+                    <button id="voiceCloseBtn" style="position:absolute;top:18px;right:24px;background:none;border:none;color:#fff;font-size:2rem;cursor:pointer;">&times;</button>
+                `;
+                document.getElementById('voiceCloseBtn').addEventListener('click', function(e) {
+                    overlay.classList.remove('show');
+                    document.body.style.overflow = '';
+                });
+                overlay.classList.add('show');
+                document.body.style.overflow = 'hidden';
+                const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+                if (!SpeechRecognition) {
+                    alert('Sorry, your browser does not support voice recognition.');
+                    return;
+                }
+                recognition = new SpeechRecognition();
+                recognition.lang = 'en-US';
+                recognition.interimResults = false;
+                recognition.maxAlternatives = 1;
+                status = document.getElementById('voiceStatus');
+                status.textContent = 'Say a city name to get the weather!';
+                // Timer logic: persist timer if overlay is closed and reopened
+                if (!timerActive) {
+                    timerStart = Date.now();
+                    timerActive = true;
+                }
+                let checkTimer = function() {
+                    if (!timerActive) return;
+                    timerElapsed = Date.now() - timerStart;
+                    if (timerElapsed >= 10000) {
+                        recognition.abort();
+                        showMicRetry();
+                        timerActive = false;
+                    } else if (overlay.classList.contains('show')) {
+                        setTimeout(checkTimer, 100);
+                    }
+                };
+                setTimeout(checkTimer, 100);
+                recognition.start();
+                recognition.onresult = function(event) {
+                    timerActive = false;
+                    const transcript = event.results[0][0].transcript.trim();
+                    if (transcript) {
+                        status.textContent = transcript;
+                        setTimeout(() => {
+                            cityInput.value = transcript;
+                            overlay.classList.remove('show');
+                            document.body.style.overflow = '';
+                            form.submit();
+                        }, 1000);
+                    } else {
+                        showMicRetry();
+                    }
+                };
+                recognition.onerror = function(event) {
+                    timerActive = false;
+                    showMicRetry();
+                };
+                recognition.onend = function() {
+                    timerActive = false;
+                };
+            }
+            micBtn.addEventListener('click', function(e) {
+                if (timerActive && timerElapsed < 10000) {
+                    overlay.classList.add('show');
+                    document.body.style.overflow = 'hidden';
+                } else {
+                    timerActive = false;
+                    timerElapsed = 0;
+                    startVoiceRecognition();
+                }
+            });
+            // Click outside modal closes overlay
+            overlay.addEventListener('mousedown', function(e) {
+                if (e.target === overlay) {
+                    overlay.classList.remove('show');
+                    document.body.style.overflow = '';
+                }
+            });
+        })();
 
         // Time updater
         function updateTime() {
@@ -1047,127 +1451,7 @@
         }
         setInterval(updateTime, 1000);
         updateTime();
-
-        function handleLocationKey(event, city) {
-            if (event.key === "Enter" || event.key === "Delete") {
-                confirmDeleteLocation(event, city);
-            }
-        }
-
-        // Logout function
-        function logout() {
-            if (confirm('Are you sure you want to log out?')) {
-                window.location.href = '/logout';
-            }
-        }
-
-        function sendVerificationCode() {
-            var countryCode = document.getElementById('countryCode').value;
-            var phoneNumber = document.getElementById('phoneNumber').value;
-            var fullPhoneNumber = countryCode + phoneNumber;
-
-            // Now send `fullPhoneNumber` to your backend for verification
-            // Example:
-            fetch('/send_verification', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ phone: fullPhoneNumber })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    var phoneAuthForm = document.getElementById('phoneAuthForm');
-                    var verificationForm = document.getElementById('verificationForm');
-                    if (phoneAuthForm) phoneAuthForm.style.display = 'none';
-                    if (verificationForm) verificationForm.style.display = 'block';
-
-                    let message = 'Verification code sent to ' + phoneNumber;
-                    if (data.demo_note) {
-                        message += '\n\n📋 Demo Mode: Check the server console/terminal for your verification code.';
-                    }
-                    showSuccess(message);
-                } else {
-                    showError(data.error || 'Failed to send verification code');
-                    sendCodeBtn.disabled = false;
-                    sendCodeBtn.textContent = 'Send Verification Code';
-                }
-            });
-        }
-
-        function getOtpCode() {
-            const codeInput = document.getElementById('otpInput');
-            if (!codeInput) {
-                alert("OTP input not found!");
-                return;
-            }
-            const code = codeInput.value;
-            return code;
-        }
-
-        document.addEventListener('DOMContentLoaded', function() {
-            var welcome = document.getElementById('welcome-message');
-            if (welcome) {
-                setTimeout(function() {
-                    welcome.style.transition = "opacity 0.5s";
-                    welcome.style.opacity = 0;
-                    setTimeout(function() {
-                        if (welcome.parentNode) welcome.parentNode.removeChild(welcome);
-                    }, 500);
-                }, 10000);
-            }
-        });
-
-        function resendOTP(e) {
-            e.preventDefault();
-            var resendBtn = document.getElementById('resendOtpBtn');
-            if (resendBtn) resendBtn.style.display = 'none';
-            startOtpTimer();
-            // Resend the code using the last phone input
-            let input = lastPhoneInput;
-            let countryCode = '+1';
-            let phone = input;
-            let fullPhoneNumber = '';
-            if (input.startsWith('+')) {
-                const match = input.match(/^(\+\d{1,4})(\d{6,15})$/);
-                if (match) {
-                    countryCode = match[1];
-                    phone = match[2];
-                }
-            }
-            fullPhoneNumber = countryCode + phone;
-            var countryCodeInput = document.getElementById('countryCode');
-            var phoneInput = document.getElementById('phoneNumber');
-            if (countryCodeInput) countryCodeInput.value = countryCode;
-            if (phoneInput) phoneInput.value = phone;
-            sendVerificationCodeWithNumber(fullPhoneNumber);
-        }
-
-        document.addEventListener('DOMContentLoaded', function() {
-            const userMenu = document.getElementById('userMenu');
-            const userAvatar = document.getElementById('userAvatar');
-            const userDropdown = document.getElementById('userDropdown');
-            let isDropdownOpen = false;
-
-            // Toggle dropdown on avatar click
-            userAvatar.addEventListener('click', function(e) {
-                e.stopPropagation();
-                isDropdownOpen = !isDropdownOpen;
-                userDropdown.classList.toggle('show');
-            });
-
-            // Close dropdown when clicking outside
-            document.addEventListener('click', function(e) {
-                if (isDropdownOpen && !userDropdown.contains(e.target) && !userAvatar.contains(e.target)) {
-                    userDropdown.classList.remove('show');
-                    isDropdownOpen = false;
-                }
-            });
-
-            // Prevent dropdown from closing when clicking inside it
-            userDropdown.addEventListener('click', function(e) {
-                e.stopPropagation();
-            });
-        });
+    });
     </script>
 </body>
 </html>
