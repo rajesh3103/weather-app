@@ -89,3 +89,9 @@ If you're getting Firebase errors for phone authentication:
 ---
 
 **Need help?** Make sure you follow each step exactly as written above. The redirect URI configuration is the most common cause of issues. 
+
+Callback URL being used: https://weather-app-m1j1.onrender.com/auth/google/callback 
+
+print("Token exchange data:", data) 
+
+print(f"Token exchange failed: {response.text}") 

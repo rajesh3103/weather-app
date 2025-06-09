@@ -59,7 +59,7 @@ FIREBASE_PROJECT_ID=your_firebase_project_id_here
 ## 🔍 What's New
 
 ### ✅ **Fixed Issues:**
-- **Google OAuth Error**: No more `redirect_uri_mismatch` errors
+- **Google OAuth Error**: No more `hereredirect_uri_mismatch` errors
 - **Firebase Error**: Proper fallback to server-side phone verification
 - **Improved Error Handling**: Clear error messages for all issues
 - **Better User Experience**: Smooth redirects and loading states
